@@ -1,0 +1,13 @@
+target/
+# Source requirements document is kept local and is not part of the public repository.
+PRD*.md
+haes.db
+haes.db-shm
+haes.db-wal
+emergency_audit.log
+*.csv
+!sample-data/*.csv
+.idea/
+*.iml
+.vscode/
+.DS_Store
