@@ -11,3 +11,11 @@ emergency_audit.log
 *.iml
 .vscode/
 .DS_Store
+
+# Web client build output and local tooling
+frontend/node_modules/
+frontend/dist/
+.claude/skills/
+data/
+*.lock
+frontend/*.tsbuildinfo

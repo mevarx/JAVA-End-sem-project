@@ -4,17 +4,26 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.16</version>
+        <relativePath/>
+    </parent>
+
     <groupId>com.hospital</groupId>
     <artifactId>haes</artifactId>
     <version>1.0.0</version>
     <name>Hospital Appointment and Emergency Scheduler</name>
-    <description>CSE 213 integrated Java project: JavaFX + SQLite + concurrency</description>
+    <description>CSE 213 integrated Java project: JavaFX + SQLite + concurrency + web client</description>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>17</java.version>
         <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>21.0.5</javafx.version>
         <junit.version>5.10.2</junit.version>
+        <frontend.dir>${project.basedir}/frontend</frontend.dir>
     </properties>
 
     <dependencies>
@@ -30,17 +39,28 @@
             <version>3.45.3.0</version>
         </dependency>
 
-        <!-- Silences the SLF4J warning emitted by sqlite-jdbc. -->
+        <!-- spring-boot-starter-logging (Logback) now provides the SLF4J binding, so the
+             old slf4j-nop artefact must not be on the classpath. -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-nop</artifactId>
-            <version>2.0.13</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -70,6 +90,68 @@
                     <mainClass>com.hospital.haes.Main</mainClass>
                 </configuration>
             </plugin>
+
+            <!-- No repackage execution here: `spring-boot:run` works, while `javafx:run`
+                 and the test suite stay on the plain classpath. Repackaging happens in
+                 the `web` profile below. -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.hospital.haes.web.WebApplication</mainClass>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Build the SPA and produce a single runnable jar:
+             mvnw.cmd -Pweb package -->
+        <profile>
+            <id>web</id>
+            <build>
+                <plugins>
+                    <!-- The SPA is built with the locally installed Node: `npm run build`
+                         in frontend/. This profile copies that output into the jar, so no
+                         Node download is needed during the Maven build. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-spa</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>${frontend.dir}/dist</directory>
+                                            <filtering>false</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>repackage</id>
+                                <goals>
+                                    <goal>repackage</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

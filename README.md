@@ -35,7 +35,7 @@ cd JAVA-End-sem-project
 - A desktop session for JavaFX
 - No local Maven installation is required — the Maven Wrapper is included
 
-### Run the application
+### Run the desktop application
 
 Windows (PowerShell or Command Prompt):
 
@@ -50,6 +50,48 @@ macOS / Linux:
 ```
 
 On first launch HAES creates `haes.db` and `emergency_audit.log` in the working directory, applies `src/main/resources/db/schema.sql`, and seeds the demo hospital. Later launches reuse the same database.
+
+> **Run one client at a time.** The desktop and web clients each start their own
+> emergency dispatcher, bed pool and notification bus. Use a separate database for
+> development if you need both: `--haes.db=data/web.db`.
+
+### Run the web application
+
+The same service layer is exposed as a REST + SSE API with a React single-page client.
+Development uses two terminals:
+
+```bat
+:: terminal 1 — Java API on http://localhost:8080
+mvnw.cmd spring-boot:run
+
+:: terminal 2 — Vite dev server on http://localhost:5173 (proxies /api)
+cd frontend
+npm install
+npm run dev
+```
+
+Open <http://localhost:5173> and sign in with any demo account below.
+
+To build a single runnable jar that serves the API **and** the built SPA:
+
+```bat
+cd frontend && npm run build && cd ..
+mvnw.cmd -Pweb package
+java -jar target/haes-1.0.0.jar
+```
+
+Open <http://localhost:8080>. The `web` profile copies `frontend/dist` into the jar and
+repackages it; it uses the locally installed Node, so no Node download happens during
+the Maven build. See [docs/WEB.md](docs/WEB.md) for the API surface and session model.
+
+### Run the tests
+
+```bat
+mvnw.cmd test
+```
+
+This runs the 67 original desktop/service tests plus the web-layer API tests (84 in
+total).
 
 ### Run the tests
 
@@ -151,13 +193,19 @@ src/main/java/com/hospital/haes/
   dao/                      Generic Repository, SQLite DAOs, DatabaseManager, SampleData
   exception/                Checked domain exceptions
   util/                     Validation, PBKDF2 hashing, CSV, file logging, Result
-  ui/                       Login, main window, role views, emergency dialog, composition root
+  ui/                       JavaFX login, main window, role views, emergency dialog, composition root
+  web/                      Spring Boot entry point, REST/SSE controllers, sessions, DTOs
 src/main/resources/
   db/schema.sql             SQLite schema
-  css/app.css               UI theme
+  css/app.css               JavaFX theme
+  application.yml           Web server and database configuration
+frontend/                   React + TypeScript + Tailwind single-page client
+  src/api/                  Typed API client and endpoint functions
+  src/pages/                Role screens (patient, doctor, staff, emergency, admin)
+  src/components/           Layout, tables, dialogs and UI primitives
 src/test/java/com/hospital/haes/
-  ...                       65 JUnit tests and the evaluation harness
-docs/                       Design, testing, evaluation and demonstration notes
+  ...                       67 service/desktop tests plus web API tests (84 total)
+docs/                       Design, testing, evaluation, demonstration and web notes
 sample-data/                Example availability CSV
 ```
 

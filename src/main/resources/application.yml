@@ -1,0 +1,26 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: haes
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+  mvc:
+    async:
+      # SSE connections are kept open until the client disconnects.
+      request-timeout: -1
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+haes:
+  db: haes.db
+  audit: emergency_audit.log
+  emergency:
+    auto-start: true
