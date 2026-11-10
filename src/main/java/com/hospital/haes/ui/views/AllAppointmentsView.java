@@ -82,7 +82,8 @@ public class AllAppointmentsView extends BorderPane implements Refreshable {
         table.getColumns().add(UiUtils.column("Department", 130, appointment -> appointment.getSlot() == null
                 ? "" : appointment.getSlot().getDepartmentName()));
         table.getColumns().add(UiUtils.column("Reason", 180, Appointment::getReason));
-        table.getColumns().add(UiUtils.column("Status", 145, Appointment::getStatusLabel));
+        table.getColumns().add(UiUtils.badgeColumn("Status", 155, Appointment::getStatusLabel,
+                appointment -> UiUtils.appointmentStatusStyle(appointment.getStatus())));
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         table.setPlaceholder(new Label("No appointments match the filter."));
         return table;

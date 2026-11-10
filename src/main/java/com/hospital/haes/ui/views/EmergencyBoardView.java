@@ -60,6 +60,7 @@ public class EmergencyBoardView extends BorderPane implements Refreshable, AutoC
     private final Timeline autoRefresh;
     private final FadeTransition bannerPulse;
     private boolean loading;
+    private boolean tabSelected = true;
 
     public EmergencyBoardView(AppContext context, User actor, Scope scope) {
         this.context = context;
@@ -80,14 +81,10 @@ public class EmergencyBoardView extends BorderPane implements Refreshable, AutoC
 
         autoRefresh = new Timeline(new KeyFrame(Duration.seconds(4), event -> refresh()));
         autoRefresh.setCycleCount(Timeline.INDEFINITE);
-        sceneProperty().addListener((observable, oldScene, newScene) -> {
-            if (newScene == null) {
-                autoRefresh.stop();
-                bannerPulse.stop();
-            } else {
-                autoRefresh.play();
-            }
-        });
+        // Only poll while this tab is actually on screen; hidden tabs would otherwise
+        // hit SQLite every 4 seconds for nothing.
+        sceneProperty().addListener((observable, oldScene, newScene) -> updateAutoRefresh());
+        visibleProperty().addListener((observable, oldValue, newValue) -> updateAutoRefresh());
 
         refresh();
     }
@@ -135,11 +132,13 @@ public class EmergencyBoardView extends BorderPane implements Refreshable, AutoC
 
     private SplitPane buildContent() {
         table.getColumns().add(UiUtils.column("ID", 52, c -> "#" + c.getId()));
-        table.getColumns().add(UiUtils.column("Severity", 85, c -> c.getSeverity().getLabel()));
+        table.getColumns().add(UiUtils.badgeColumn("Severity", 95, c -> c.getSeverity().getLabel(),
+                c -> UiUtils.severityStyle(c.getSeverity())));
         table.getColumns().add(UiUtils.column("Type", 102, c -> c.getType().getLabel()));
         table.getColumns().add(UiUtils.column("Location", 125, EmergencyCase::getLocation));
         table.getColumns().add(UiUtils.column("Patient", 145, EmergencyCase::getPatientLabel));
-        table.getColumns().add(UiUtils.column("Status", 165, EmergencyCase::getStatusLabel));
+        table.getColumns().add(UiUtils.badgeColumn("Status", 175, EmergencyCase::getStatusLabel,
+                c -> UiUtils.emergencyStatusStyle(c.getStatus())));
         table.getColumns().add(UiUtils.column("Assigned to", 160, c ->
                 c.getAssignedToName() == null ? "—" : c.getAssignedToName()));
         table.getColumns().add(UiUtils.column("Bed", 50, c -> c.getBedNo() == null ? "—" : String.valueOf(c.getBedNo())));
@@ -345,9 +344,32 @@ public class EmergencyBoardView extends BorderPane implements Refreshable, AutoC
     }
 
     private void dispatchNow() {
-        int count = context.emergencyService().dispatchPendingNow();
-        refresh();
-        statusLabel.setText("Dispatch pass complete • " + count + " case(s) assigned.");
+        try {
+            int count = context.emergencyService().dispatchPendingNow();
+            refresh();
+            statusLabel.setText("Dispatch pass complete • " + count + " case(s) assigned.");
+        } catch (RuntimeException e) {
+            UiUtils.error(window(), "Dispatch failed", e);
+        }
+    }
+
+    private void updateAutoRefresh() {
+        boolean onScreen = getScene() != null && isVisible() && tabSelected;
+        if (onScreen) {
+            if (autoRefresh.getStatus() != javafx.animation.Animation.Status.RUNNING) {
+                autoRefresh.play();
+                refresh();
+            }
+        } else {
+            autoRefresh.stop();
+            bannerPulse.stop();
+        }
+    }
+
+    /** Called by MainWindow when the tab holding this view is selected or deselected. */
+    public void setTabSelected(boolean selected) {
+        this.tabSelected = selected;
+        updateAutoRefresh();
     }
 
     private Window window() {

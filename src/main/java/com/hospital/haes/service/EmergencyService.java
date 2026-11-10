@@ -382,7 +382,11 @@ public class EmergencyService {
                 continue;
             }
             Set<Integer> busy = emergencyDao.findActiveAssigneeIds();
-            User next = findAlternateResponder(emergencyCase, busy);
+            Set<Integer> alreadyTried = emergencyDao.findEscalationTargets(emergencyCase.getId());
+            if (emergencyCase.getAssignedTo() != null) {
+                alreadyTried.add(emergencyCase.getAssignedTo());
+            }
+            User next = findAlternateResponder(emergencyCase, busy, alreadyTried);
             LocalDateTime now = LocalDateTime.now();
             String note;
             if (next == null) {
@@ -391,7 +395,8 @@ public class EmergencyService {
                         + " has NOT been acknowledged and no alternate responder is free.",
                         NotificationLevel.CRITICAL);
             } else {
-                note = "Acknowledgment timeout exceeded; escalated to " + next.getFullName() + ".";
+                note = "Acknowledgment timeout exceeded; escalated to " + next.getFullName()
+                        + " (escalated to user #" + next.getId() + ").";
                 emergencyCase.setAssignedTo(next.getId());
                 emergencyCase.setAssignedToName(next.getFullName());
                 notifications.notifyUser(next.getId(),
@@ -406,31 +411,41 @@ public class EmergencyService {
             }
             emergencyCase.setStatus(EmergencyStatus.ESCALATED);
             emergencyCase.setEscalationCount(emergencyCase.getEscalationCount() + 1);
-            emergencyCase.setDispatchedAt(now);
+            // escalated_at starts the next acknowledgment window. dispatched_at keeps the
+            // original dispatch time so dispatch-latency metrics stay meaningful.
+            emergencyCase.setEscalatedAt(now);
             emergencyCase.setAcknowledgedAt(null);
 
             final String eventNote = note;
             final EmergencyCase updated = emergencyCase;
-            databaseManager.inTransaction(connection -> {
-                emergencyDao.update(connection, updated);
+            // Conditional write: if the responder acknowledged between our read and this
+            // update, the row no longer matches and we leave their acknowledgment intact.
+            boolean applied = databaseManager.inTransaction(connection -> {
+                if (!emergencyDao.updateIfUnacknowledged(connection, updated)) {
+                    return false;
+                }
                 emergencyDao.saveEvent(connection, new EmergencyEvent(
                         updated.getId(), "ESCALATED", now, eventNote));
-                return null;
+                return true;
             });
+            if (!applied) {
+                continue;
+            }
             auditLog.logEmergencyEvent(updated, "ESCALATED", note);
             escalatedCount++;
         }
         return escalatedCount;
     }
 
-    private User findAlternateResponder(EmergencyCase emergencyCase, Set<Integer> busy)
+    private User findAlternateResponder(EmergencyCase emergencyCase, Set<Integer> busy,
+                                        Set<Integer> alreadyTried)
             throws DatabaseOperationException {
-        Integer current = emergencyCase.getAssignedTo();
         for (User user : userDao.findResponders()) {
             if (busy.contains(user.getId())) {
                 continue;
             }
-            if (current != null && current == user.getId()) {
+            // Never bounce a case back to a responder who already let it time out.
+            if (alreadyTried.contains(user.getId())) {
                 continue;
             }
             if (user instanceof Doctor doctor) {

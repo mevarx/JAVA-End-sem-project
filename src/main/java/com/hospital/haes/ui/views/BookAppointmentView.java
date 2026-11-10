@@ -46,6 +46,7 @@ public class BookAppointmentView extends BorderPane implements Refreshable {
     private final TextField reasonField = new TextField();
     private final Label selectionLabel = new Label("Select a free slot to continue.");
     private final Label statusLabel = new Label("Ready");
+    private boolean booking;
 
     public BookAppointmentView(AppContext context, User actor) {
         this.context = context;
@@ -129,7 +130,7 @@ public class BookAppointmentView extends BorderPane implements Refreshable {
         slotsTable.setRowFactory(table -> {
             TableRow<Slot> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                if (event.getClickCount() == 2 && !row.isEmpty() && !booking) {
                     book();
                 }
             });
@@ -220,6 +221,9 @@ public class BookAppointmentView extends BorderPane implements Refreshable {
     }
 
     private void book() {
+        if (booking) {
+            return;
+        }
         Slot slot = slotsTable.getSelectionModel().getSelectedItem();
         if (slot == null) {
             UiUtils.warn(window(), "Select a slot", "Choose a free slot from the table first.");
@@ -236,6 +240,7 @@ public class BookAppointmentView extends BorderPane implements Refreshable {
             }
             patientId = patient.getId();
         }
+        booking = true;
         try {
             Appointment appointment = context.appointmentService().book(patientId, slot.getId(), reasonField.getText());
             reasonField.clear();
@@ -253,6 +258,8 @@ public class BookAppointmentView extends BorderPane implements Refreshable {
             UiUtils.error(window(), "Booking not allowed", e.getMessage());
         } catch (DatabaseOperationException e) {
             UiUtils.error(window(), "Database error", e);
+        } finally {
+            booking = false;
         }
     }
 

@@ -75,7 +75,8 @@ public class AvailabilityView extends BorderPane implements Refreshable {
         table.getColumns().add(UiUtils.column("Date", 140, slot -> UiUtils.date(slot.getStart().toLocalDate())));
         table.getColumns().add(UiUtils.column("Start", 100, slot -> slot.getStart().format(TIME)));
         table.getColumns().add(UiUtils.column("End", 100, slot -> slot.getEnd().format(TIME)));
-        table.getColumns().add(UiUtils.column("Status", 160, slot -> slot.getStatus().getLabel()));
+        table.getColumns().add(UiUtils.badgeColumn("Status", 120, slot -> slot.getStatus().getLabel(),
+                slot -> UiUtils.slotStatusStyle(slot.getStatus())));
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         table.setPlaceholder(new Label("No slots published yet. Add one below."));
         return table;

@@ -73,7 +73,8 @@ public class WaitlistView extends BorderPane implements Refreshable {
         table.getColumns().add(UiUtils.column("Original time", 110,
                 appointment -> UiUtils.time(appointment.getStart())));
         table.getColumns().add(UiUtils.column("Reason", 240, Appointment::getReason));
-        table.getColumns().add(UiUtils.column("Status", 160, Appointment::getStatusLabel));
+        table.getColumns().add(UiUtils.badgeColumn("Status", 170, Appointment::getStatusLabel,
+                appointment -> UiUtils.appointmentStatusStyle(appointment.getStatus())));
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         table.setPlaceholder(new Label("No pre-empted appointments. Routine bookings are intact."));
         return table;
@@ -92,7 +93,6 @@ public class WaitlistView extends BorderPane implements Refreshable {
     @Override
     public void refresh() {
         try {
-            context.appointmentService().refreshWaitlist();
             List<Appointment> waitlist = context.appointmentService().getWaitlistSnapshot();
             table.getItems().setAll(waitlist);
             statusLabel.setText(waitlist.size() + " patient(s) waiting for a new slot.");

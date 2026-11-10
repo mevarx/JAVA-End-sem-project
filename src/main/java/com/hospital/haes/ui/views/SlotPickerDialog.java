@@ -40,9 +40,13 @@ public final class SlotPickerDialog {
         table.setPlaceholder(new Label("No free slots are available for this doctor."));
 
         try {
+            // Keep the booking with the same doctor the header promises. A pre-empted
+            // appointment may have lost its slot, so fall back to the department filter.
+            Integer doctorId = appointment.getDoctorId() > 0 ? appointment.getDoctorId() : null;
+            Integer departmentId = doctorId != null ? null
+                    : (appointment.getSlot() == null ? null : appointment.getSlot().getDepartmentId());
             List<Slot> slots = context.appointmentService().findAvailableSlots(
-                    appointment.getSlot() == null ? null : appointment.getSlot().getDepartmentId(),
-                    appointment.getDoctorId(), null);
+                    departmentId, doctorId, null);
             table.getItems().setAll(slots);
         } catch (DatabaseOperationException e) {
             UiUtils.error(owner, "Could not load free slots", e);

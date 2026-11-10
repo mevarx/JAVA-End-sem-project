@@ -273,4 +273,26 @@ class AppointmentServiceTest {
         assertEquals(AppointmentStatus.BOOKED,
                 service.findById(appointment.getId()).orElseThrow().getStatus());
     }
+
+    @Test
+    @DisplayName("Only the assigned doctor or an admin can complete an appointment")
+    void changeStatusRejectsOtherRoles() throws Exception {
+        AppointmentService service = fixture.appointmentService;
+        Slot slot = fixture.createSlot(fixture.doctor.getId(), fixture.nextStart(), 30);
+        Appointment appointment = service.book(fixture.patient.getId(), slot.getId(), "Check-up");
+
+        assertThrows(UnauthorizedActionException.class, () -> service.changeStatus(
+                appointment.getId(), fixture.patient.getId(), Role.PATIENT, AppointmentStatus.COMPLETED));
+        assertThrows(UnauthorizedActionException.class, () -> service.changeStatus(
+                appointment.getId(), fixture.erStaff.getId(), Role.ER_STAFF, AppointmentStatus.NO_SHOW));
+        assertThrows(UnauthorizedActionException.class, () -> service.changeStatus(
+                appointment.getId(), fixture.admin.getId(), Role.RECEPTIONIST, AppointmentStatus.COMPLETED));
+        assertEquals(AppointmentStatus.BOOKED,
+                service.findById(appointment.getId()).orElseThrow().getStatus());
+
+        service.changeStatus(appointment.getId(), fixture.doctor.getId(), Role.DOCTOR,
+                AppointmentStatus.COMPLETED);
+        assertEquals(AppointmentStatus.COMPLETED,
+                service.findById(appointment.getId()).orElseThrow().getStatus());
+    }
 }

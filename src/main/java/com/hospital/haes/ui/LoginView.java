@@ -47,6 +47,11 @@ public class LoginView extends StackPane {
         Label eyebrow = new Label("CSE 213  •  INTEGRATED JAVA PROJECT");
         eyebrow.getStyleClass().add("eyebrow");
 
+        Label mark = new Label("✚");
+        mark.setStyle("-fx-font-size: 26px; -fx-text-fill: #0f766e;");
+        HBox brandRow = new HBox(10, mark, eyebrow);
+        brandRow.setAlignment(Pos.CENTER_LEFT);
+
         Label title = new Label("Hospital Appointment & Emergency Scheduler");
         title.getStyleClass().add("brand-title");
         title.setWrapText(true);
@@ -97,7 +102,7 @@ public class LoginView extends StackPane {
         footnote.getStyleClass().addAll("muted", "small");
         footnote.setWrapText(true);
 
-        card.getChildren().addAll(eyebrow, title, subtitle, fields, registerButton,
+        card.getChildren().addAll(brandRow, title, subtitle, fields, registerButton,
                 separator, demo, footnote);
         getChildren().add(card);
     }

@@ -56,7 +56,15 @@ public class AuthService {
             throw new UnauthorizedActionException("The current password is incorrect.");
         }
         Validator.password(newPassword);
-        user.setPasswordHash(PasswordHasher.hash(newPassword));
-        userDao.update(user);
+        String newHash = PasswordHasher.hash(newPassword);
+        String previousHash = user.getPasswordHash();
+        // Persist first so a failed write leaves the session object consistent with the database.
+        user.setPasswordHash(newHash);
+        try {
+            userDao.update(user);
+        } catch (RuntimeException e) {
+            user.setPasswordHash(previousHash);
+            throw e;
+        }
     }
 }

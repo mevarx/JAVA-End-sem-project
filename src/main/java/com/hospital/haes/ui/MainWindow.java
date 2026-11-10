@@ -19,7 +19,9 @@ import com.hospital.haes.ui.views.Refreshable;
 import com.hospital.haes.ui.views.ReportsView;
 import com.hospital.haes.ui.views.WaitlistView;
 import com.hospital.haes.util.Result;
+import javafx.animation.KeyFrame;
 import javafx.animation.ScaleTransition;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -75,6 +77,7 @@ public class MainWindow extends BorderPane implements Notifiable {
     private final Label unreadLabel = new Label();
     private final List<Refreshable> refreshables = new ArrayList<>();
     private ScaleTransition emergencyPulse;
+    private Timeline liveStatus;
     private int unreadCount;
 
     public MainWindow(AppContext context, User user, Runnable onLogout) {
@@ -83,22 +86,28 @@ public class MainWindow extends BorderPane implements Notifiable {
         this.onLogout = onLogout;
 
         context.notificationService().addListener(this);
-        addEventHandler(UiUtils.NotificationEvent.NOTIFICATION, event -> {
-            unreadCount++;
-            unreadLabel.setText(String.valueOf(unreadCount));
-            unreadLabel.setVisible(true);
-            unreadLabel.setManaged(true);
-        });
 
         setTop(buildTop());
         setCenter(buildCenter());
         setRight(buildNotificationPanel());
         setBottom(buildStatusBar());
         loadNotificationHistory();
+        // Keep the status bar honest about the live dispatch queue and free beds.
+        liveStatus = new Timeline(new KeyFrame(Duration.seconds(5), event -> updateLiveStatus()));
+        liveStatus.setCycleCount(Timeline.INDEFINITE);
+        liveStatus.play();
 
         tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
-            if (newTab != null && newTab.getContent() instanceof Refreshable refreshable) {
-                refreshable.refresh();
+            if (oldTab != null && oldTab.getContent() instanceof EmergencyBoardView oldBoard) {
+                oldBoard.setTabSelected(false);
+            }
+            if (newTab != null) {
+                if (newTab.getContent() instanceof EmergencyBoardView newBoard) {
+                    newBoard.setTabSelected(true);
+                }
+                if (newTab.getContent() instanceof Refreshable refreshable) {
+                    refreshable.refresh();
+                }
             }
         });
         setPadding(Insets.EMPTY);
@@ -135,7 +144,6 @@ public class MainWindow extends BorderPane implements Notifiable {
         Label brand = new Label("HAES");
         brand.getStyleClass().add("app-name");
         Label subtitle = new Label("Hospital Appointment & Emergency Centre");
-        subtitle.getStyleClass().add("muted");
         subtitle.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11px;");
 
         Region spacer = new Region();
@@ -148,7 +156,20 @@ public class MainWindow extends BorderPane implements Notifiable {
 
         Button emergencyButton = new Button("⚠  EMERGENCY");
         emergencyButton.getStyleClass().add("emergency-button");
+        emergencyButton.setTooltip(new javafx.scene.control.Tooltip(
+                "Raise an emergency case (Ctrl+E)"));
         emergencyButton.setOnAction(event -> openEmergencyDialog());
+        // Keyboard shortcut so the red button is reachable without the mouse.
+        javafx.scene.input.KeyCombination raiseEmergency =
+                javafx.scene.input.KeyCombination.keyCombination("Shortcut+E");
+        sceneProperty().addListener((observable, oldScene, newScene) -> {
+            if (oldScene != null) {
+                oldScene.getAccelerators().remove(raiseEmergency);
+            }
+            if (newScene != null) {
+                newScene.getAccelerators().put(raiseEmergency, emergencyButton::fire);
+            }
+        });
         emergencyPulse = new ScaleTransition(Duration.millis(850), emergencyButton);
         emergencyPulse.setFromX(1.0);
         emergencyPulse.setFromY(1.0);
@@ -220,6 +241,10 @@ public class MainWindow extends BorderPane implements Notifiable {
     private void addTab(String title, Node content) {
         Tab tab = new Tab(title, content);
         tab.setClosable(false);
+        if (content instanceof EmergencyBoardView board) {
+            // Background boards only poll while their tab is selected.
+            board.setTabSelected(tabPane.getTabs().isEmpty());
+        }
         tabPane.getTabs().add(tab);
         if (content instanceof Refreshable refreshable) {
             refreshables.add(refreshable);
@@ -243,11 +268,13 @@ public class MainWindow extends BorderPane implements Notifiable {
         clear.getStyleClass().add("secondary-button");
         clear.setStyle("-fx-font-size: 10px; -fx-padding: 3 8 3 8;");
         clear.setOnAction(event -> {
-            context.notificationService().clearHistory();
+            // Clear only this session's panel. The history deque is shared by every
+            // signed-in user, so wiping it here would empty other users' panels too.
             notifications.clear();
             unreadCount = 0;
             unreadLabel.setVisible(false);
             unreadLabel.setManaged(false);
+            statusLabel.setText("Notifications cleared for this session.");
         });
         HBox header = new HBox(6, title, spacer, unreadLabel, clear);
         header.setAlignment(Pos.CENTER_LEFT);
@@ -286,21 +313,52 @@ public class MainWindow extends BorderPane implements Notifiable {
         if (notification.getTargetUserId() != 0 && notification.getTargetUserId() != user.getId()) {
             return;
         }
-        Platform.runLater(() -> {
+        // receive() is called from dispatcher/escalation threads, so every UI touch,
+        // including the unread badge, must be marshalled onto the FX thread.
+        UiUtils.runOnFx(() -> {
             notifications.add(0, notification);
             while (notifications.size() > 100) {
                 notifications.remove(notifications.size() - 1);
             }
+            unreadCount++;
+            unreadLabel.setText(String.valueOf(unreadCount));
+            unreadLabel.setVisible(true);
+            unreadLabel.setManaged(true);
             statusLabel.setText("Live • " + notification.getMessage());
-            fireEvent(new UiUtils.NotificationEvent(notification));
             refreshEmergencyViews();
+            refreshAppointmentViews();
         });
+    }
+
+    private void updateLiveStatus() {
+        try {
+            int queued = context.emergencyService().getQueueSize();
+            int beds = context.emergencyService().getBedPool().availableBeds();
+            statusLabel.setText("Dispatcher queue: " + queued + " • free ER beds: " + beds);
+        } catch (RuntimeException e) {
+            statusLabel.setText("Live status unavailable: " + e.getMessage());
+        }
     }
 
     private void refreshEmergencyViews() {
         for (Tab tab : tabPane.getTabs()) {
             if (tab.getContent() instanceof EmergencyBoardView board) {
                 board.refresh();
+            }
+        }
+    }
+
+    /** Appointment views are not on a timer, so live events (e.g. pre-emption) must refresh them. */
+    private void refreshAppointmentViews() {
+        for (Tab tab : tabPane.getTabs()) {
+            Node content = tab.getContent();
+            if (content instanceof MyAppointmentsView || content instanceof AllAppointmentsView
+                    || content instanceof DoctorScheduleView || content instanceof WaitlistView) {
+                try {
+                    ((Refreshable) content).refresh();
+                } catch (RuntimeException e) {
+                    System.err.println("Appointment view refresh failed: " + e.getMessage());
+                }
             }
         }
     }
@@ -435,6 +493,9 @@ public class MainWindow extends BorderPane implements Notifiable {
         context.notificationService().removeListener(this);
         if (emergencyPulse != null) {
             emergencyPulse.stop();
+        }
+        if (liveStatus != null) {
+            liveStatus.stop();
         }
         for (Tab tab : tabPane.getTabs()) {
             if (tab.getContent() instanceof AutoCloseable closeable) {

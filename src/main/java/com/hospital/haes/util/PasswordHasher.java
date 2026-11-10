@@ -14,6 +14,8 @@ public final class PasswordHasher {
 
     private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
     private static final int ITERATIONS = 65_536;
+    private static final int MIN_ITERATIONS = 10_000;
+    private static final int MAX_ITERATIONS = 1_000_000;
     private static final int KEY_LENGTH_BITS = 256;
     private static final int SALT_BYTES = 16;
     private static final String PREFIX = "pbkdf2";
@@ -43,6 +45,10 @@ public final class PasswordHasher {
         }
         try {
             int iterations = Integer.parseInt(parts[1]);
+            // Reject absurd iteration counts so a tampered hash cannot stall every login.
+            if (iterations < MIN_ITERATIONS || iterations > MAX_ITERATIONS) {
+                return false;
+            }
             byte[] salt = Base64.getDecoder().decode(parts[2]);
             byte[] expected = Base64.getDecoder().decode(parts[3]);
             byte[] actual = derive(password.toCharArray(), salt, iterations);

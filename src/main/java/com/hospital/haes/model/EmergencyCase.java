@@ -24,6 +24,7 @@ public class EmergencyCase extends Booking implements Comparable<EmergencyCase> 
     private LocalDateTime raisedAt;
     private LocalDateTime dispatchedAt;
     private LocalDateTime acknowledgedAt;
+    private LocalDateTime escalatedAt;
     private LocalDateTime resolvedAt;
     private int escalationCount;
 
@@ -31,8 +32,8 @@ public class EmergencyCase extends Booking implements Comparable<EmergencyCase> 
                          EmergencyType type, Severity severity, String location,
                          EmergencyStatus status, Integer assignedTo, Integer bedNo,
                          LocalDateTime raisedAt, LocalDateTime dispatchedAt,
-                         LocalDateTime acknowledgedAt, LocalDateTime resolvedAt,
-                         int escalationCount) {
+                         LocalDateTime acknowledgedAt, LocalDateTime escalatedAt,
+                         LocalDateTime resolvedAt, int escalationCount) {
         this.id = id;
         this.patientId = patientId;
         this.patientLabel = patientLabel;
@@ -45,6 +46,7 @@ public class EmergencyCase extends Booking implements Comparable<EmergencyCase> 
         this.raisedAt = raisedAt;
         this.dispatchedAt = dispatchedAt;
         this.acknowledgedAt = acknowledgedAt;
+        this.escalatedAt = escalatedAt;
         this.resolvedAt = resolvedAt;
         this.escalationCount = escalationCount;
     }
@@ -53,7 +55,7 @@ public class EmergencyCase extends Booking implements Comparable<EmergencyCase> 
                                         EmergencyType type, Severity severity,
                                         String location, LocalDateTime raisedAt) {
         return new EmergencyCase(0, patientId, patientLabel, type, severity, location,
-                EmergencyStatus.WAITING, null, null, raisedAt, null, null, null, 0);
+                EmergencyStatus.WAITING, null, null, raisedAt, null, null, null, null, 0);
     }
 
     @Override
@@ -167,6 +169,14 @@ public class EmergencyCase extends Booking implements Comparable<EmergencyCase> 
 
     public void setAcknowledgedAt(LocalDateTime acknowledgedAt) {
         this.acknowledgedAt = acknowledgedAt;
+    }
+
+    public LocalDateTime getEscalatedAt() {
+        return escalatedAt;
+    }
+
+    public void setEscalatedAt(LocalDateTime escalatedAt) {
+        this.escalatedAt = escalatedAt;
     }
 
     public LocalDateTime getResolvedAt() {

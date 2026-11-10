@@ -70,17 +70,21 @@ public class ReportingService {
             StringBuilder errors = new StringBuilder();
             for (int i = 0; i < rows.length; i++) {
                 CsvImporter.SlotRow row = rows[i];
-                Optional<User> doctor = userDao.findByUsername(row.doctorUsername());
-                if (doctor.isEmpty() || doctor.get().getRole() != Role.DOCTOR) {
-                    appendError(errors, i + 1, "unknown doctor '" + row.doctorUsername() + "'");
-                    continue;
-                }
                 try {
+                    Optional<User> doctor = userDao.findByUsername(row.doctorUsername());
+                    if (doctor.isEmpty() || doctor.get().getRole() != Role.DOCTOR) {
+                        appendError(errors, i + 1, "unknown doctor '" + row.doctorUsername() + "'");
+                        continue;
+                    }
                     appointmentService.defineAvailability(doctor.get().getId(),
                             row.date().atTime(row.start()), row.date().atTime(row.end()));
                     imported++;
                 } catch (SlotConflictException | ValidationException e) {
                     appendError(errors, i + 1, e.getMessage());
+                } catch (DatabaseOperationException e) {
+                    // Each row is its own transaction, so record the failure and keep going
+                    // rather than aborting an import that has already committed earlier rows.
+                    appendError(errors, i + 1, "database error: " + e.getMessage());
                 }
             }
             if (errors.length() > 0) {
@@ -91,8 +95,6 @@ public class ReportingService {
             return Result.fail("Could not read the CSV file: " + e.getMessage());
         } catch (ValidationException e) {
             return Result.fail(e.getMessage());
-        } catch (DatabaseOperationException e) {
-            return Result.fail("Database error during import: " + e.getMessage());
         }
     }
 

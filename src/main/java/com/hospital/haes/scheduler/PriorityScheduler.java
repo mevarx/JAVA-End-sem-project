@@ -16,13 +16,16 @@ import java.util.concurrent.TimeUnit;
 public class PriorityScheduler<T extends Schedulable & Comparable<T>> {
 
     private final PriorityBlockingQueue<T> queue;
+    private final Comparator<? super T> comparator;
 
     public PriorityScheduler() {
         this.queue = new PriorityBlockingQueue<>();
+        this.comparator = null;
     }
 
     public PriorityScheduler(Comparator<T> comparator) {
         this.queue = new PriorityBlockingQueue<>(11, comparator);
+        this.comparator = comparator;
     }
 
     public void offer(T item) {
@@ -60,7 +63,8 @@ public class PriorityScheduler<T extends Schedulable & Comparable<T>> {
     /** Stable snapshot in priority order; used by tests and the UI. */
     public List<T> snapshot() {
         List<T> copy = new ArrayList<>(queue);
-        copy.sort(Comparator.naturalOrder());
+        // Honour the comparator the queue was built with; fall back to natural order.
+        copy.sort(comparator != null ? comparator : Comparator.naturalOrder());
         return copy;
     }
 

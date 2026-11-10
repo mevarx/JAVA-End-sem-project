@@ -171,8 +171,13 @@ public class UserDao implements Repository<User, Integer> {
             statement.setInt(1, id);
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new DatabaseOperationException(
-                    "The user cannot be deleted because clinical records still reference it.", e);
+            String message = e.getMessage() == null ? "" : e.getMessage();
+            if (message.contains("FOREIGN KEY") || message.contains("constraint")) {
+                throw new DatabaseOperationException(
+                        "This account cannot be deleted because appointments or emergency cases still "
+                                + "reference it. Deactivate the account instead, or remove those records first.", e);
+            }
+            throw new DatabaseOperationException("Could not delete the user: " + message, e);
         }
     }
 

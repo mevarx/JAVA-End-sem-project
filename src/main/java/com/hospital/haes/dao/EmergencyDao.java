@@ -47,8 +47,8 @@ public class EmergencyDao implements Repository<EmergencyCase, Integer> {
         String sql = """
                 INSERT INTO emergencies (patient_id, patient_label, type, severity, location, status,
                                          assigned_to, bed_no, raised_at, dispatched_at, acknowledged_at,
-                                         resolved_at, escalation_count)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                         escalated_at, resolved_at, escalation_count)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             bind(statement, emergencyCase);
@@ -143,8 +143,8 @@ public class EmergencyDao implements Repository<EmergencyCase, Integer> {
                  WHERE e.status IN ('ASSIGNED', 'ESCALATED')
                    AND e.acknowledged_at IS NULL
                    AND e.dispatched_at IS NOT NULL
-                   AND e.dispatched_at <= ?
-                 ORDER BY e.dispatched_at
+                   AND COALESCE(e.escalated_at, e.dispatched_at) <= ?
+                 ORDER BY COALESCE(e.escalated_at, e.dispatched_at)
                 """;
         List<EmergencyCase> cases = new ArrayList<>();
         try (Connection connection = databaseManager.getConnection();
@@ -188,17 +188,104 @@ public class EmergencyDao implements Repository<EmergencyCase, Integer> {
         });
     }
 
+    /**
+     * Applies an escalation only if the case is still unacknowledged and still in a
+     * state that can be escalated. Returns false when a concurrent acknowledge/resolve
+     * won the race, so the caller can skip its notifications and audit entry.
+     */
+    public boolean updateIfUnacknowledged(Connection connection, EmergencyCase emergencyCase)
+            throws SQLException {
+        String sql = """
+                UPDATE emergencies
+                SET status = ?, assigned_to = ?, bed_no = ?, dispatched_at = ?,
+                    escalated_at = ?, escalation_count = ?
+                WHERE id = ?
+                  AND acknowledged_at IS NULL
+                  AND status IN ('ASSIGNED', 'ESCALATED')
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, emergencyCase.getStatus().name());
+            if (emergencyCase.getAssignedTo() == null) {
+                statement.setNull(2, Types.INTEGER);
+            } else {
+                statement.setInt(2, emergencyCase.getAssignedTo());
+            }
+            if (emergencyCase.getBedNo() == null) {
+                statement.setNull(3, Types.INTEGER);
+            } else {
+                statement.setInt(3, emergencyCase.getBedNo());
+            }
+            statement.setString(4, emergencyCase.getDispatchedAt() == null
+                    ? null : emergencyCase.getDispatchedAt().toString());
+            statement.setString(5, emergencyCase.getEscalatedAt() == null
+                    ? null : emergencyCase.getEscalatedAt().toString());
+            statement.setInt(6, emergencyCase.getEscalationCount());
+            statement.setInt(7, emergencyCase.getId());
+            return statement.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Responders this case has already been escalated to. The target is recorded in the
+     * ESCALATED event note as "escalated to user #12", so the case cannot bounce back.
+     */
+    public Set<Integer> findEscalationTargets(int emergencyId) throws DatabaseOperationException {
+        String sql = """
+                SELECT note FROM emergency_events
+                WHERE emergency_id = ? AND event_type = 'ESCALATED'
+                """;
+        Set<Integer> ids = new HashSet<>();
+        try (Connection connection = databaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, emergencyId);
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    Integer target = parseEscalationTarget(rs.getString(1));
+                    if (target != null) {
+                        ids.add(target);
+                    }
+                }
+            }
+            return ids;
+        } catch (SQLException e) {
+            throw new DatabaseOperationException("Could not load escalation history.", e);
+        }
+    }
+
+    private static Integer parseEscalationTarget(String note) {
+        if (note == null) {
+            return null;
+        }
+        int marker = note.indexOf("escalated to user #");
+        if (marker < 0) {
+            return null;
+        }
+        int start = marker + "escalated to user #".length();
+        int end = start;
+        while (end < note.length() && Character.isDigit(note.charAt(end))) {
+            end++;
+        }
+        if (end == start) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(note.substring(start, end));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     public void update(Connection connection, EmergencyCase emergencyCase) throws SQLException {
         String sql = """
                 UPDATE emergencies
                 SET patient_id = ?, patient_label = ?, type = ?, severity = ?, location = ?,
                     status = ?, assigned_to = ?, bed_no = ?, raised_at = ?, dispatched_at = ?,
-                    acknowledged_at = ?, resolved_at = ?, escalation_count = ?
+                    acknowledged_at = ?, escalated_at = ?, resolved_at = ?, escalation_count = ?
                 WHERE id = ?
                 """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             bind(statement, emergencyCase);
-            statement.setInt(14, emergencyCase.getId());
+            statement.setInt(15, emergencyCase.getId());
             if (statement.executeUpdate() == 0) {
                 throw new SQLException("Emergency #" + emergencyCase.getId() + " no longer exists.");
             }
@@ -305,8 +392,9 @@ public class EmergencyDao implements Repository<EmergencyCase, Integer> {
         statement.setString(9, c.getRaisedAt().toString());
         statement.setString(10, c.getDispatchedAt() == null ? null : c.getDispatchedAt().toString());
         statement.setString(11, c.getAcknowledgedAt() == null ? null : c.getAcknowledgedAt().toString());
-        statement.setString(12, c.getResolvedAt() == null ? null : c.getResolvedAt().toString());
-        statement.setInt(13, c.getEscalationCount());
+        statement.setString(12, c.getEscalatedAt() == null ? null : c.getEscalatedAt().toString());
+        statement.setString(13, c.getResolvedAt() == null ? null : c.getResolvedAt().toString());
+        statement.setInt(14, c.getEscalationCount());
     }
 
     private EmergencyCase map(ResultSet rs) throws SQLException {
@@ -315,6 +403,7 @@ public class EmergencyDao implements Repository<EmergencyCase, Integer> {
         Integer bedNo = nullableInt(rs, "bed_no");
         String dispatched = rs.getString("dispatched_at");
         String acknowledged = rs.getString("acknowledged_at");
+        String escalated = rs.getString("escalated_at");
         String resolved = rs.getString("resolved_at");
         EmergencyCase emergencyCase = new EmergencyCase(
                 rs.getInt("id"),
@@ -329,6 +418,7 @@ public class EmergencyDao implements Repository<EmergencyCase, Integer> {
                 LocalDateTime.parse(rs.getString("raised_at")),
                 dispatched == null ? null : LocalDateTime.parse(dispatched),
                 acknowledged == null ? null : LocalDateTime.parse(acknowledged),
+                escalated == null ? null : LocalDateTime.parse(escalated),
                 resolved == null ? null : LocalDateTime.parse(resolved),
                 rs.getInt("escalation_count"));
         emergencyCase.setAssignedToName(rs.getString("assigned_name"));

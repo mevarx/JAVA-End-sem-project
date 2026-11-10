@@ -1,12 +1,14 @@
 package com.hospital.haes.ui;
 
-import com.hospital.haes.model.Notification;
+import com.hospital.haes.model.AppointmentStatus;
+import com.hospital.haes.model.EmergencyStatus;
+import com.hospital.haes.model.Severity;
+import com.hospital.haes.model.SlotStatus;
 import javafx.application.Platform;
-import javafx.event.Event;
-import javafx.event.EventType;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.stage.Window;
 
@@ -53,6 +55,88 @@ public final class UiUtils {
             return new ReadOnlyStringWrapper(value == null ? "" : value);
         });
         return column;
+    }
+
+    /**
+     * Table column whose cells render a coloured pill instead of plain text, so severity
+     * and status are readable at a glance. The pill style class is resolved per value.
+     */
+    public static <T> TableColumn<T, String> badgeColumn(String title, double width,
+                                                         Function<T, String> text,
+                                                         Function<T, String> styleClass) {
+        TableColumn<T, String> column = new TableColumn<>(title);
+        column.setPrefWidth(width);
+        column.setCellValueFactory(cell -> {
+            String value;
+            try {
+                value = text.apply(cell.getValue());
+            } catch (RuntimeException e) {
+                value = "";
+            }
+            return new ReadOnlyStringWrapper(value == null ? "" : value);
+        });
+        column.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String value, boolean empty) {
+                super.updateItem(value, empty);
+                getStyleClass().removeIf(style -> style.startsWith("badge-"));
+                if (empty || value == null || value.isBlank()) {
+                    setText(null);
+                    setGraphic(null);
+                    return;
+                }
+                T row = getTableRow() == null ? null : getTableRow().getItem();
+                setText(value);
+                String style = "badge";
+                if (row != null) {
+                    try {
+                        String extra = styleClass.apply(row);
+                        if (extra != null) {
+                            style = extra;
+                        }
+                    } catch (RuntimeException ignored) {
+                        // Fall back to the neutral badge.
+                    }
+                }
+                getStyleClass().add(style);
+            }
+        });
+        return column;
+    }
+
+    /** Severity pill style for an emergency case. */
+    public static String severityStyle(Severity severity) {
+        return switch (severity) {
+            case CRITICAL -> "badge-critical";
+            case HIGH -> "badge-high";
+            case MEDIUM -> "badge-medium";
+        };
+    }
+
+    /** Status pill style for an emergency case. */
+    public static String emergencyStatusStyle(EmergencyStatus status) {
+        return switch (status) {
+            case WAITING -> "badge-waiting";
+            case ASSIGNED, ACKNOWLEDGED -> "badge-assigned";
+            case ESCALATED -> "badge-escalated";
+            case RESOLVED -> "badge-resolved";
+        };
+    }
+
+    /** Status pill style for an appointment. */
+    public static String appointmentStatusStyle(AppointmentStatus status) {
+        return switch (status) {
+            case BOOKED -> "badge-assigned";
+            case COMPLETED -> "badge-resolved";
+            case CANCELLED, NO_SHOW -> "badge-neutral";
+            case RESCHEDULED -> "badge-medium";
+            case PRE_EMPTED -> "badge-critical";
+        };
+    }
+
+    /** Slot pill style. */
+    public static String slotStatusStyle(SlotStatus status) {
+        return status == SlotStatus.FREE ? "badge-resolved" : "badge-assigned";
     }
 
     public static void error(Window owner, String header, Throwable throwable) {
@@ -105,24 +189,6 @@ public final class UiUtils {
 
     public static String fileName(Path path) {
         return path == null ? "" : path.getFileName().toString();
-    }
-
-    /** Custom JavaFX event used by the notification panel to update visual state. */
-    public static final class NotificationEvent extends Event {
-
-        public static final EventType<NotificationEvent> NOTIFICATION =
-                new EventType<>(Event.ANY, "HAES_NOTIFICATION");
-
-        private final transient Notification notification;
-
-        public NotificationEvent(Notification notification) {
-            super(NOTIFICATION);
-            this.notification = notification;
-        }
-
-        public Notification getNotification() {
-            return notification;
-        }
     }
 
     public static void runOnFx(Runnable runnable) {

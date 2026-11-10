@@ -340,4 +340,27 @@ class EmergencyServiceTest {
         assertEquals(1, assignedSecond.getBedNo());
         assertTrue(assignedSecond.getAssignedTo() != null);
     }
+
+    @Test
+    @DisplayName("An escalation that loses the race to an acknowledgment leaves the acknowledgment intact")
+    void acknowledgeWinsAgainstStaleEscalation() throws Exception {
+        fixture = new TestFixture(tempDir, 8, 0);
+        EmergencyCase raised = fixture.emergencyService.raiseEmergency(
+                fixture.patient.getId(), null, EmergencyType.CARDIAC, Severity.HIGH,
+                "ER", fixture.admin.getId());
+        fixture.emergencyService.dispatchPendingNow();
+        fixture.emergencyService.acknowledge(raised.getId(), fixture.doctor.getId());
+
+        // A stale escalation write must not overwrite the ACKNOWLEDGED row.
+        EmergencyCase stale = fixture.emergencyService.findById(raised.getId()).orElseThrow();
+        stale.setStatus(EmergencyStatus.ESCALATED);
+        stale.setAcknowledgedAt(null);
+        boolean applied = fixture.databaseManager.inTransaction(
+                connection -> fixture.emergencyDao.updateIfUnacknowledged(connection, stale));
+        assertFalse(applied);
+
+        EmergencyCase after = fixture.emergencyService.findById(raised.getId()).orElseThrow();
+        assertEquals(EmergencyStatus.ACKNOWLEDGED, after.getStatus());
+        assertNotNull(after.getAcknowledgedAt());
+    }
 }

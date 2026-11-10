@@ -80,7 +80,8 @@ public class DoctorScheduleView extends BorderPane implements Refreshable {
         table.getColumns().add(UiUtils.column("Department", 150, appointment -> appointment.getSlot() == null
                 ? "" : appointment.getSlot().getDepartmentName()));
         table.getColumns().add(UiUtils.column("Reason", 240, Appointment::getReason));
-        table.getColumns().add(UiUtils.column("Status", 160, Appointment::getStatusLabel));
+        table.getColumns().add(UiUtils.badgeColumn("Status", 170, Appointment::getStatusLabel,
+                appointment -> UiUtils.appointmentStatusStyle(appointment.getStatus())));
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         table.setPlaceholder(new Label("No appointments in your schedule yet."));
         return table;

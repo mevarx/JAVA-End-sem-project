@@ -42,6 +42,7 @@ public class AdminUsersView extends BorderPane implements Refreshable {
     private final Label statusLabel = new Label("Ready");
     private final Map<Integer, String> departmentNames = new HashMap<>();
     private List<Department> departments;
+    private boolean userDialogOpen;
 
     public AdminUsersView(AppContext context, User actor) {
         this.context = context;
@@ -140,8 +141,26 @@ public class AdminUsersView extends BorderPane implements Refreshable {
     }
 
     private void showUserDialog(User existing) {
+        if (userDialogOpen) {
+            return;
+        }
+        userDialogOpen = true;
+        try {
+            showUserDialogInternal(existing);
+        } finally {
+            userDialogOpen = false;
+        }
+    }
+
+    private void showUserDialogInternal(User existing) {
         if (departments == null) {
             refresh();
+        }
+        if (departments == null) {
+            // Without the department list an edit would silently clear the user's department.
+            UiUtils.error(window(), "Departments unavailable",
+                    "The department list could not be loaded. Try again before editing users.");
+            return;
         }
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.initOwner(window());

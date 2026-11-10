@@ -273,8 +273,8 @@ public class AppointmentService {
         }
         Appointment appointment = appointmentDao.findById(appointmentId)
                 .orElseThrow(() -> new InvalidBookingException("Appointment not found."));
-        if (actorRole != Role.ADMIN
-                && !(actorRole == Role.DOCTOR && appointment.getDoctorId() == actorId)) {
+        boolean isAssignedDoctor = actorRole == Role.DOCTOR && appointment.getDoctorId() == actorId;
+        if (actorRole != Role.ADMIN && !isAssignedDoctor) {
             throw new UnauthorizedActionException("Only the assigned doctor can update this appointment.");
         }
         int slotId = appointment.getSlotId();
@@ -379,8 +379,10 @@ public class AppointmentService {
         }
     }
 
-    public List<Appointment> getWaitlistSnapshot() {
-        return rescheduleWaitlist.snapshot();
+    public List<Appointment> getWaitlistSnapshot() throws DatabaseOperationException {
+        // The database is the source of truth: reading PRE_EMPTED rows directly means a
+        // refresh can never drop an appointment that was pre-empted concurrently.
+        return appointmentDao.findByStatus(AppointmentStatus.PRE_EMPTED);
     }
 
     public int getMaxActiveAppointments() {

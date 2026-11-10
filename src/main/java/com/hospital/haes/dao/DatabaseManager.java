@@ -101,9 +101,31 @@ public class DatabaseManager {
                     statement.execute(sql);
                 }
             }
+            applyMigrations(statement);
         } catch (SQLException e) {
             throw new DatabaseOperationException(
                     "Could not initialize the database at " + databasePath + ": " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Brings databases created by older versions up to date. CREATE TABLE IF NOT EXISTS
+     * does not add new columns to an existing table, so additive changes go here.
+     */
+    private void applyMigrations(Statement statement) throws SQLException {
+        if (!hasColumn(statement, "emergencies", "escalated_at")) {
+            statement.execute("ALTER TABLE emergencies ADD COLUMN escalated_at TEXT");
+        }
+    }
+
+    private boolean hasColumn(Statement statement, String table, String column) throws SQLException {
+        try (java.sql.ResultSet rs = statement.executeQuery("PRAGMA table_info(" + table + ")")) {
+            while (rs.next()) {
+                if (column.equalsIgnoreCase(rs.getString("name"))) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

@@ -137,7 +137,7 @@ public final class SampleData {
         EmergencyCase emergencyCase = new EmergencyCase(0, patient.getId(), patient.getFullName(),
                 EmergencyType.CARDIAC, Severity.HIGH, "ER Gate", EmergencyStatus.RESOLVED,
                 doctor.getId(), 3, yesterday, yesterday.plusMinutes(1),
-                yesterday.plusMinutes(4), yesterday.plusMinutes(29), 0);
+                yesterday.plusMinutes(4), null, yesterday.plusMinutes(29), 0);
         emergencyDao.save(emergencyCase);
         emergencyDao.saveEvent(new EmergencyEvent(emergencyCase.getId(), "RAISED",
                 yesterday, "Demo historical case"));

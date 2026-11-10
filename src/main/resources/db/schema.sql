@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS emergencies (
     raised_at TEXT NOT NULL,
     dispatched_at TEXT,
     acknowledged_at TEXT,
+    escalated_at TEXT,
     resolved_at TEXT,
     escalation_count INTEGER NOT NULL DEFAULT 0
 );

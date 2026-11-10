@@ -67,9 +67,13 @@ public class EmergencyDispatcher implements AutoCloseable {
                 } finally {
                     dispatchLock.unlock();
                 }
-                if (!handled && running.get()) {
+                if (!handled) {
+                    // Always put the case back, even while stopping: dropping it here would
+                    // lose an in-flight emergency from the live queue.
                     queue.offer(next);
-                    Thread.sleep(300);
+                    if (running.get()) {
+                        Thread.sleep(300);
+                    }
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

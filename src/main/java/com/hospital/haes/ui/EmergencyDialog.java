@@ -51,10 +51,13 @@ public class EmergencyDialog extends Dialog<EmergencyCase> {
             try {
                 List<User> patients = context.userService().listPatients();
                 patientCombo.getItems().setAll(patients);
+                patientCombo.setPromptText("Walk-in / unregistered (optional)");
             } catch (DatabaseOperationException e) {
-                patientCombo.setPromptText("Could not load patients");
+                // Keep the failure visible; silently showing an empty list would look
+                // like the hospital has no registered patients.
+                patientCombo.setPromptText("Could not load patients — use walk-in");
+                patientCombo.setDisable(true);
             }
-            patientCombo.setPromptText("Walk-in / unregistered (optional)");
             patientCombo.setPrefWidth(260);
             walkInLabel.setPrefWidth(260);
         }
