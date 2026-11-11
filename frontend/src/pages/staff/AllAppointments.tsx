@@ -3,7 +3,7 @@ import { appointmentApi } from '../../api/endpoints'
 import type { Appointment, AppointmentStatus, Slot } from '../../api/types'
 import { APPOINTMENT_STATUS_LABELS, appointmentStatusTone, formatDate, formatTime } from '../../lib/format'
 import { useLiveRefresh } from '../../lib/useLiveRefresh'
-import { Alert, Badge, Button, Card, PageHeader, Spinner, inputClass } from '../../components/ui'
+import { Alert, Badge, Button, Card, Field, PageHeader, Spinner, inputClass } from '../../components/ui'
 import { Cell, EmptyRow, Row, Table } from '../../components/Table'
 import { SlotPickerModal } from '../../components/SlotPickerModal'
 
@@ -71,21 +71,26 @@ export function AllAppointmentsPage() {
         }
       />
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <select
-          className={`${inputClass} max-w-xs`}
-          value={filter}
-          onChange={(e) => setFilter(e.target.value as 'ALL' | AppointmentStatus)}
-        >
-          <option value="ALL">All statuses</option>
-          {Object.entries(APPOINTMENT_STATUS_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <span className="text-sm text-muted-foreground">{visible.length} appointment(s)</span>
-      </div>
+      <Card className="mb-4 flex flex-wrap items-end gap-4 p-4">
+        <Field label="Status filter">
+          <select
+            aria-label="Status filter"
+            className={`${inputClass} min-h-[44px] max-w-xs`}
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as 'ALL' | AppointmentStatus)}
+          >
+            <option value="ALL">All statuses</option>
+            {Object.entries(APPOINTMENT_STATUS_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <p aria-live="polite" className="pb-2.5 text-sm tabular-nums text-muted-foreground">
+          {visible.length} appointment(s)
+        </p>
+      </Card>
 
       <div className="mb-3 space-y-2">
         {error && <Alert>{error}</Alert>}
@@ -93,7 +98,9 @@ export function AllAppointmentsPage() {
       </div>
 
       {loading ? (
-        <Spinner label="Loading appointments…" />
+        <Card className="p-0">
+          <Spinner label="Loading appointments…" />
+        </Card>
       ) : (
         <Table head={['#', 'Date', 'Time', 'Patient', 'Doctor', 'Reason', 'Status']}>
           {visible.length === 0 ? (
@@ -105,12 +112,12 @@ export function AllAppointmentsPage() {
                 selected={selected?.id === appointment.id}
                 onClick={() => setSelected(appointment)}
               >
-                <Cell>#{appointment.id}</Cell>
-                <Cell>{formatDate(appointment.start)}</Cell>
-                <Cell>{formatTime(appointment.start)}</Cell>
-                <Cell>{appointment.patientName}</Cell>
+                <Cell className="whitespace-nowrap tabular-nums">#{appointment.id}</Cell>
+                <Cell className="whitespace-nowrap">{formatDate(appointment.start)}</Cell>
+                <Cell className="whitespace-nowrap tabular-nums">{formatTime(appointment.start)}</Cell>
+                <Cell className="font-medium">{appointment.patientName}</Cell>
                 <Cell>{appointment.doctorName}</Cell>
-                <Cell>{appointment.reason || '—'}</Cell>
+                <Cell className="max-w-56 truncate" title={appointment.reason || undefined}>{appointment.reason || '—'}</Cell>
                 <Cell>
                   <Badge tone={appointmentStatusTone(appointment.status)}>{appointment.statusLabel}</Badge>
                 </Cell>
@@ -120,15 +127,15 @@ export function AllAppointmentsPage() {
         </Table>
       )}
 
-      <Card className="mt-5 flex flex-wrap gap-3 p-4">
-        <Button onClick={() => setRescheduling(selected)} disabled={!canAct}>
+      <Card className="mt-5 flex flex-wrap items-center gap-3 p-4">
+        <Button className="min-h-[44px]" onClick={() => setRescheduling(selected)} disabled={!canAct}>
           Reschedule
         </Button>
-        <Button variant="danger" onClick={cancel} disabled={!canAct}>
+        <Button className="min-h-[44px]" variant="danger" onClick={cancel} disabled={!canAct}>
           Cancel
         </Button>
         {selected && (
-          <p className="self-center text-sm text-muted-foreground">Selected #{selected.id} · {selected.patientName}</p>
+          <p aria-live="polite" className="self-center text-sm text-muted-foreground">Selected #{selected.id} · {selected.patientName}</p>
         )}
       </Card>
 

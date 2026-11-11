@@ -3,7 +3,7 @@ import { appointmentApi } from '../../api/endpoints'
 import type { Appointment, AppointmentStatus, Slot } from '../../api/types'
 import { APPOINTMENT_STATUS_LABELS, appointmentStatusTone, formatDate, formatTime } from '../../lib/format'
 import { useLiveRefresh } from '../../lib/useLiveRefresh'
-import { Alert, Badge, Button, Card, PageHeader, Spinner, inputClass } from '../../components/ui'
+import { Alert, Badge, Button, Card, Field, PageHeader, Spinner, inputClass } from '../../components/ui'
 import { Cell, EmptyRow, Row, Table } from '../../components/Table'
 import { SlotPickerModal } from '../../components/SlotPickerModal'
 
@@ -61,7 +61,7 @@ export function MyAppointmentsPage() {
   const canReschedule = selected && (selected.status === 'BOOKED' || selected.status === 'PRE_EMPTED')
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
         title="My appointments"
         subtitle="Cancel or move an active booking. Pre-empted bookings can be re-booked here."
@@ -72,23 +72,29 @@ export function MyAppointmentsPage() {
         }
       />
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <select
-          className={`${inputClass} max-w-xs`}
-          value={filter}
-          onChange={(e) => setFilter(e.target.value as 'ALL' | AppointmentStatus)}
-        >
-          <option value="ALL">All statuses</option>
-          {Object.entries(APPOINTMENT_STATUS_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <span className="text-sm text-muted-foreground">{visible.length} appointment(s)</span>
-      </div>
+      <Card className="p-4">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-full min-w-0 flex-1 basis-60 sm:max-w-xs sm:flex-none">
+            <Field label="Status filter">
+              <select
+                className={inputClass}
+                value={filter}
+                onChange={(e) => setFilter(e.target.value as 'ALL' | AppointmentStatus)}
+              >
+                <option value="ALL">All statuses</option>
+                {Object.entries(APPOINTMENT_STATUS_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
+          <p className="pb-2 text-sm text-muted-foreground">{visible.length} appointment(s)</p>
+        </div>
+      </Card>
 
-      <div className="mb-3 space-y-2">
+      <div className="space-y-2">
         {error && <Alert>{error}</Alert>}
         {notice && <Alert tone="success">{notice}</Alert>}
       </div>
@@ -96,43 +102,49 @@ export function MyAppointmentsPage() {
       {loading ? (
         <Spinner label="Loading appointments…" />
       ) : (
-        <Table head={['Date', 'Time', 'Doctor', 'Department', 'Reason', 'Status']}>
-          {visible.length === 0 ? (
-            <EmptyRow colSpan={6} message="No appointments match this filter." />
-          ) : (
-            visible.map((appointment) => (
-              <Row
-                key={appointment.id}
-                selected={selected?.id === appointment.id}
-                onClick={() => setSelected(appointment)}
-              >
-                <Cell>{formatDate(appointment.start)}</Cell>
-                <Cell>{formatTime(appointment.start)}</Cell>
-                <Cell>{appointment.doctorName}</Cell>
-                <Cell className="text-muted-foreground">#{appointment.doctorId}</Cell>
-                <Cell>{appointment.reason || '—'}</Cell>
-                <Cell>
-                  <Badge tone={appointmentStatusTone(appointment.status)}>{appointment.statusLabel}</Badge>
-                </Cell>
-              </Row>
-            ))
-          )}
-        </Table>
+        <Card className="p-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-base font-semibold">Bookings</h2>
+            {selected && (
+              <p className="text-sm text-muted-foreground">
+                Selected #{selected.id} · {selected.statusLabel}
+              </p>
+            )}
+          </div>
+          <div className="mt-3 overflow-x-auto">
+            <Table head={['Date', 'Time', 'Doctor', 'Department', 'Reason', 'Status']}>
+              {visible.length === 0 ? (
+                <EmptyRow colSpan={6} message="No appointments match this filter." />
+              ) : (
+                visible.map((appointment) => (
+                  <Row
+                    key={appointment.id}
+                    selected={selected?.id === appointment.id}
+                    onClick={() => setSelected(appointment)}
+                  >
+                    <Cell>{formatDate(appointment.start)}</Cell>
+                    <Cell>{formatTime(appointment.start)}</Cell>
+                    <Cell>{appointment.doctorName}</Cell>
+                    <Cell className="text-muted-foreground">#{appointment.doctorId}</Cell>
+                    <Cell>{appointment.reason || '—'}</Cell>
+                    <Cell>
+                      <Badge tone={appointmentStatusTone(appointment.status)}>{appointment.statusLabel}</Badge>
+                    </Cell>
+                  </Row>
+                ))
+              )}
+            </Table>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button onClick={() => setRescheduling(selected)} disabled={!canReschedule}>
+              Reschedule / rebook
+            </Button>
+            <Button variant="danger" onClick={cancel} disabled={!canCancel}>
+              Cancel appointment
+            </Button>
+          </div>
+        </Card>
       )}
-
-      <Card className="mt-5 flex flex-wrap gap-3 p-4">
-        <Button onClick={() => setRescheduling(selected)} disabled={!canReschedule}>
-          Reschedule / rebook
-        </Button>
-        <Button variant="danger" onClick={cancel} disabled={!canCancel}>
-          Cancel appointment
-        </Button>
-        {selected && (
-          <p className="self-center text-sm text-muted-foreground">
-            Selected #{selected.id} · {selected.statusLabel}
-          </p>
-        )}
-      </Card>
 
       <SlotPickerModal
         appointment={rescheduling}

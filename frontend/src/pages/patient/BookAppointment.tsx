@@ -2,8 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { appointmentApi, departmentApi, slotApi, userApi } from '../../api/endpoints'
 import type { Department, Slot, User } from '../../api/types'
 import { useAuth } from '../../auth/AuthContext'
-import { Alert, Button, Card, Field, PageHeader, Spinner, inputClass } from '../../components/ui'
-import { Cell, EmptyRow, Row, Table } from '../../components/Table'
+import { Alert, Button, Card, EmptyState, Field, PageHeader, Spinner, inputClass } from '../../components/ui'
 import { formatDate, formatTime, todayIso } from '../../lib/format'
 
 export function BookAppointmentPage() {
@@ -98,7 +97,7 @@ export function BookAppointmentPage() {
   }
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
         title={isPatient ? 'Find and book an appointment' : 'Book an appointment for a patient'}
         subtitle="Only free slots are listed. Overlapping bookings are rejected by the database transaction."
@@ -109,7 +108,7 @@ export function BookAppointmentPage() {
         }
       />
 
-      <Card className="mb-5 p-4">
+      <Card className="p-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Department">
             <select
@@ -161,40 +160,62 @@ export function BookAppointmentPage() {
         </div>
       </Card>
 
-      <div className="mb-3 space-y-2">
+      <div className="space-y-2">
         {error && <Alert>{error}</Alert>}
         {success && <Alert tone="success">{success}</Alert>}
       </div>
 
-      {loading ? (
-        <Spinner label="Loading free slots…" />
-      ) : (
-        <Table head={['Date', 'Time', 'Doctor', 'Department']}>
-          {slots.length === 0 ? (
-            <EmptyRow colSpan={4} message="No free slots for these filters. Try another date." />
+      <Card className="p-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-base font-semibold">Available slots</h2>
+          <p className="text-sm text-muted-foreground">
+            {loading ? 'Loading…' : `${slots.length} free slot(s) · ${formatDate(date)}`}
+          </p>
+        </div>
+        <div className="mt-3">
+          {loading ? (
+            <Spinner label="Loading free slots…" />
+          ) : slots.length === 0 ? (
+            <EmptyState
+              title="No free slots"
+              hint="No free slots for these filters. Try another date."
+            />
           ) : (
-            slots.map((slot) => (
-              <Row
-                key={slot.id}
-                selected={selected?.id === slot.id}
-                onClick={() => setSelected(slot)}
-              >
-                <Cell>{formatDate(slot.start)}</Cell>
-                <Cell>
-                  <span className="font-bold">{formatTime(slot.start)}</span>
-                  <span className="text-muted-foreground"> – {formatTime(slot.end)}</span>
-                </Cell>
-                <Cell>{slot.doctorName}</Cell>
-                <Cell>{slot.departmentName || '—'}</Cell>
-              </Row>
-            ))
+            <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {slots.map((slot) => {
+                const isSelected = selected?.id === slot.id
+                return (
+                  <li key={slot.id} className="min-w-0">
+                    <button
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => setSelected(slot)}
+                      className={`min-h-11 w-full cursor-pointer rounded-lg border px-3 py-2 text-left transition-colors duration-150 ${
+                        isSelected
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border bg-surface hover:border-primary/50'
+                      }`}
+                    >
+                      <span className="block text-sm font-semibold">
+                        {formatTime(slot.start)}
+                        <span className="font-normal text-muted-foreground"> – {formatTime(slot.end)}</span>
+                      </span>
+                      <span className="mt-0.5 block truncate text-sm text-muted-foreground">
+                        {slot.doctorName} · {slot.departmentName || 'General'}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">{formatDate(slot.start)}</span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
           )}
-        </Table>
-      )}
+        </div>
+      </Card>
 
-      <Card className="mt-5 p-4">
+      <Card className="p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <div className="min-w-[240px] flex-1">
+          <div className="min-w-0 flex-1 basis-60">
             <Field label="Reason for visit">
               <input
                 className={inputClass}
@@ -208,6 +229,11 @@ export function BookAppointmentPage() {
             {busy ? 'Booking…' : selected ? `Book ${formatTime(selected.start)} with ${selected.doctorName}` : 'Book selected slot'}
           </Button>
         </div>
+        {selected && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Selected {formatDate(selected.start)} at {formatTime(selected.start)} with {selected.doctorName}.
+          </p>
+        )}
       </Card>
     </div>
   )

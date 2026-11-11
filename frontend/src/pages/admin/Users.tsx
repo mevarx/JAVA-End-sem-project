@@ -178,20 +178,14 @@ export function AdminUsersPage() {
                   </Badge>
                 </Cell>
                 <Cell className="whitespace-nowrap text-right">
-                  <button
-                    type="button"
-                    className="mr-3 text-xs font-bold text-primary hover:underline"
-                    onClick={() => openEdit(user)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="text-xs font-bold text-red-700 hover:underline"
-                    onClick={() => remove(user)}
-                  >
-                    Delete
-                  </button>
+                  <div className="inline-flex items-center gap-1">
+                    <Button variant="ghost" className="min-h-11 px-3" onClick={() => openEdit(user)}>
+                      Edit
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => remove(user)}>
+                      Delete
+                    </Button>
+                  </div>
                 </Cell>
               </Row>
             ))
@@ -281,15 +275,20 @@ export function AdminUsersPage() {
               onChange={(e) => setForm({ ...form, specialization: e.target.value })}
             />
           </Field>
-          <label className="flex items-center gap-2 self-end pb-2 text-sm">
-            <input
-              type="checkbox"
-              checked={form.onCall}
-              disabled={!isDoctor}
-              onChange={(e) => setForm({ ...form, onCall: e.target.checked })}
-            />
-            Available for emergency dispatch
-          </label>
+          <div className="flex flex-col gap-1.5 text-sm">
+            <span className="font-bold text-foreground">Dispatch availability</span>
+            <label className="flex min-h-11 cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                className="h-5 w-5 shrink-0 accent-primary"
+                checked={form.onCall}
+                disabled={!isDoctor}
+                onChange={(e) => setForm({ ...form, onCall: e.target.checked })}
+              />
+              Available for emergency dispatch
+            </label>
+            <span className="text-xs text-muted-foreground">Only applies to doctors.</span>
+          </div>
         </div>
       </Modal>
     </div>

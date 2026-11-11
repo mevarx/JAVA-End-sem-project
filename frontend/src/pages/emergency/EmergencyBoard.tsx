@@ -145,7 +145,8 @@ export function EmergencyBoardPage() {
           <>
             {isStaff && (
               <select
-                className={`${inputClass} w-auto`}
+                aria-label="Case scope"
+                className={`${inputClass} min-h-11 w-auto cursor-pointer`}
                 value={scope}
                 onChange={(e) => setScope(e.target.value as 'active' | 'all')}
               >
@@ -154,11 +155,11 @@ export function EmergencyBoardPage() {
               </select>
             )}
             {role === 'ER_STAFF' || role === 'ADMIN' ? (
-              <Button variant="secondary" onClick={dispatch} disabled={busy}>
+              <Button variant="secondary" className="min-h-11 cursor-pointer" onClick={dispatch} disabled={busy}>
                 Dispatch now
               </Button>
             ) : null}
-            <Button variant="secondary" onClick={load}>
+            <Button variant="secondary" className="min-h-11 cursor-pointer" onClick={load}>
               Refresh
             </Button>
           </>
@@ -186,7 +187,7 @@ export function EmergencyBoardPage() {
         <StatCard label="Cases in view" value={board?.cases.length ?? '—'} />
       </div>
 
-      <div className="mb-3 space-y-2">
+      <div className="mb-3 min-h-12 space-y-2" aria-live="polite">
         {error && <Alert>{error}</Alert>}
         {notice && <Alert tone="success">{notice}</Alert>}
       </div>

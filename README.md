@@ -200,14 +200,37 @@ src/main/resources/
   css/app.css               JavaFX theme
   application.yml           Web server and database configuration
 frontend/                   React + TypeScript + Tailwind single-page client
+  public/logo.svg           Brand mark (medical cross + clock); public/favicon.svg is the 16px variant
   src/api/                  Typed API client and endpoint functions
   src/pages/                Role screens (patient, doctor, staff, emergency, admin)
-  src/components/           Layout, tables, dialogs and UI primitives
+  src/components/           Layout, tables, dialogs, Logo and UI primitives
+  src/styles/tokens.css     Single source of truth: color/type/radius/shadow tokens (no raw hex elsewhere)
 src/test/java/com/hospital/haes/
   ...                       67 service/desktop tests plus web API tests (84 total)
 docs/                       Design, testing, evaluation, demonstration and web notes
 sample-data/                Example availability CSV
 ```
+
+### Web UI design system
+
+The frontend follows one shared rhythm so every role screen looks even: `PageHeader`
+(title + subtitle + actions) → filter/controls card → content card with `Table` or uniform
+rows → `EmptyState` / `Spinner` / `Alert` states. All screens are built from the primitives
+in `src/components/ui.tsx` (`Button`, `Card`, `Badge`, `PageHeader`, `StatCard`, `Field`,
+`Modal`, `Spinner`, `Alert`) plus `Table` (`Table`/`Row`/`Cell`/`EmptyRow`) and the 24×24
+stroke icon set in `src/components/icons.tsx`.
+
+Rules for new screens:
+
+- Colors, radii and shadows come from `src/styles/tokens.css` only — never raw hex or
+  ad-hoc Tailwind palette classes for chrome. (Severity/status tones in `src/lib/format.ts`
+  are the deliberate exception: semantic red/amber/emerald with always-visible label text.)
+- Spacing from the Tailwind scale; text contrast ≥ 4.5:1; touch targets ≥ 44px;
+  `cursor-pointer` + 150–300ms transitions on clickables; tables scroll inside their card
+  (`overflow-x-auto`), never the page. Verified at 375 / 768 / 1024 / 1440px with
+  `prefers-reduced-motion` and the `:focus-visible` ring preserved.
+- Brand: `Logo` component (`src/components/Logo.tsx`) renders `public/logo.svg`;
+  `theme-color` in `frontend/index.html` stays synced with `--color-primary`.
 
 ## Documentation
 

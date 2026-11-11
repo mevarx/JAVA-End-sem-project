@@ -121,23 +121,21 @@ export function AdminDepartmentsPage() {
               <Row key={department.id}>
                 <Cell>{department.name}</Cell>
                 <Cell className="whitespace-nowrap text-right">
-                  <button
-                    type="button"
-                    className="mr-3 text-xs font-bold text-primary hover:underline"
-                    onClick={() => {
-                      setRenaming(department)
-                      setRenameValue(department.name)
-                    }}
-                  >
-                    Rename
-                  </button>
-                  <button
-                    type="button"
-                    className="text-xs font-bold text-red-700 hover:underline"
-                    onClick={() => remove(department)}
-                  >
-                    Delete
-                  </button>
+                  <div className="inline-flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      className="min-h-11 cursor-pointer px-3"
+                      onClick={() => {
+                        setRenaming(department)
+                        setRenameValue(department.name)
+                      }}
+                    >
+                      Rename
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => remove(department)}>
+                      Delete
+                    </Button>
+                  </div>
                 </Cell>
               </Row>
             ))

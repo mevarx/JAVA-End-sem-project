@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import { ROLE_HOME } from '../../nav'
 import { Alert, Button, Card, Field, inputClass } from '../../components/ui'
+import { Logo } from '../../components/Logo'
 
 export function RegisterPage() {
   const { register } = useAuth()
@@ -30,60 +31,84 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-6">
-      <Card className="w-full max-w-md p-8">
-        <p className="text-xs font-bold uppercase tracking-widest text-primary">HAES</p>
-        <h1 className="mt-2 text-2xl font-bold text-foreground">Create a patient account</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          You will be signed in automatically after registering.
-        </p>
-        <form className="mt-6 space-y-4" onSubmit={submit}>
-          {error && <Alert>{error}</Alert>}
-          <Field label="Username">
-            <input
-              className={inputClass}
-              autoComplete="username"
-              value={form.username}
-              onChange={(e) => update('username', e.target.value)}
-              required
-            />
-          </Field>
-          <Field label="Password" hint="At least 6 characters.">
-            <input
-              className={inputClass}
-              type="password"
-              autoComplete="new-password"
-              value={form.password}
-              onChange={(e) => update('password', e.target.value)}
-              required
-            />
-          </Field>
-          <Field label="Full name">
-            <input
-              className={inputClass}
-              value={form.fullName}
-              onChange={(e) => update('fullName', e.target.value)}
-              required
-            />
-          </Field>
-          <Field label="Phone (optional)">
-            <input
-              className={inputClass}
-              value={form.phone}
-              onChange={(e) => update('phone', e.target.value)}
-            />
-          </Field>
-          <Button type="submit" className="w-full" disabled={busy}>
-            {busy ? 'Creating account…' : 'Create account'}
-          </Button>
-        </form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+    <div className="flex min-h-dvh items-center justify-center bg-muted px-4 py-10">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center text-center">
+          <Logo size={40} />
+          <p className="mt-3 text-lg font-bold tracking-tight text-foreground">HAES</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Hospital Appointment &amp; Emergency Scheduler
+          </p>
+        </div>
+
+        <Card className="mt-6 p-6 sm:p-8">
+          <h1 className="text-xl font-bold tracking-tight text-foreground">
+            Create a patient account
+          </h1>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            You will be signed in automatically after registering.
+          </p>
+
+          <form className="mt-6 space-y-4" onSubmit={submit}>
+            {error && (
+              <Alert>
+                <span role="alert">{error}</span>
+              </Alert>
+            )}
+            <Field label="Username">
+              <input
+                className={`${inputClass} min-h-[44px]`}
+                autoComplete="username"
+                name="username"
+                value={form.username}
+                onChange={(e) => update('username', e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Password" hint="At least 6 characters.">
+              <input
+                className={`${inputClass} min-h-[44px]`}
+                type="password"
+                autoComplete="new-password"
+                name="password"
+                value={form.password}
+                onChange={(e) => update('password', e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Full name">
+              <input
+                className={`${inputClass} min-h-[44px]`}
+                autoComplete="name"
+                name="fullName"
+                value={form.fullName}
+                onChange={(e) => update('fullName', e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Phone (optional)">
+              <input
+                className={`${inputClass} min-h-[44px]`}
+                type="tel"
+                autoComplete="tel"
+                name="phone"
+                value={form.phone}
+                onChange={(e) => update('phone', e.target.value)}
+              />
+            </Field>
+            <Button type="submit" className="min-h-[44px] w-full" disabled={busy}>
+              {busy ? 'Creating account…' : 'Create account'}
+            </Button>
+          </form>
+        </Card>
+
+        <p className="mt-4 border-t border-border pt-4 text-center text-sm text-muted-foreground">
           Already registered?{' '}
           <Link className="font-bold text-primary hover:underline" to="/login">
             Sign in
           </Link>
         </p>
-      </Card>
+      </div>
     </div>
   )
 }

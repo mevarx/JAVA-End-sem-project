@@ -2,21 +2,22 @@ import type { SVGProps } from 'react'
 
 type IconProps = SVGProps<SVGSVGElement>
 
-function base(props: IconProps) {
+function base(props: IconProps, className = '') {
+  const { className: cls, ...rest } = props
   return {
-    width: 18,
-    height: 18,
+    width: 24,
+    height: 24,
     viewBox: '0 0 24 24',
     fill: 'none',
     stroke: 'currentColor',
-    strokeWidth: 1.8,
+    strokeWidth: 2,
     strokeLinecap: 'round' as const,
     strokeLinejoin: 'round' as const,
     'aria-hidden': true,
-    ...props,
+    className: `h-6 w-6 shrink-0 ${cls} ${className}`.trim(),
+    ...rest,
   }
 }
-
 export function BellIcon(props: IconProps) {
   return (
     <svg {...base(props)}>

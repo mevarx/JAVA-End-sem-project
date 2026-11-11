@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { appointmentApi } from '../../api/endpoints'
 import type { Appointment, Slot } from '../../api/types'
-import { formatDate, formatTime } from '../../lib/format'
+import { appointmentStatusTone, formatDate, formatTime } from '../../lib/format'
 import { useLiveRefresh } from '../../lib/useLiveRefresh'
 import { Alert, Badge, Button, Card, EmptyState, PageHeader, Spinner } from '../../components/ui'
 import { Cell, Row, Table } from '../../components/Table'
@@ -51,15 +51,24 @@ export function WaitlistPage() {
         }
       />
 
+      <Card className="mb-4 flex flex-wrap items-center gap-4 p-4">
+        <p aria-live="polite" className="text-sm tabular-nums text-muted-foreground">
+          {waitlist.length} appointment(s) waiting for re-booking
+        </p>
+      </Card>
+
       <div className="mb-3 space-y-2">
         {error && <Alert>{error}</Alert>}
         {notice && <Alert tone="success">{notice}</Alert>}
       </div>
-
       {loading ? (
-        <Spinner label="Loading the re-booking queue…" />
+        <Card className="p-0">
+          <Spinner label="Loading the re-booking queue…" />
+        </Card>
       ) : waitlist.length === 0 ? (
-        <EmptyState title="Nothing in the re-booking queue" hint="Routine bookings are intact." />
+        <Card className="p-4">
+          <EmptyState title="Nothing in the re-booking queue" hint="Routine bookings are intact." />
+        </Card>
       ) : (
         <Table head={['Patient', 'Doctor', 'Original date', 'Original time', 'Reason', 'Status']}>
           {waitlist.map((appointment) => (
@@ -68,13 +77,13 @@ export function WaitlistPage() {
               selected={selected?.id === appointment.id}
               onClick={() => setSelected(appointment)}
             >
-              <Cell>{appointment.patientName}</Cell>
+              <Cell className="font-medium">{appointment.patientName}</Cell>
               <Cell>{appointment.doctorName}</Cell>
-              <Cell>{formatDate(appointment.start)}</Cell>
-              <Cell>{formatTime(appointment.start)}</Cell>
-              <Cell>{appointment.reason || '—'}</Cell>
+              <Cell className="whitespace-nowrap">{formatDate(appointment.start)}</Cell>
+              <Cell className="whitespace-nowrap tabular-nums">{formatTime(appointment.start)}</Cell>
+              <Cell className="max-w-56 truncate" title={appointment.reason || undefined}>{appointment.reason || '—'}</Cell>
               <Cell>
-                <Badge tone="bg-red-100 text-red-700">{appointment.statusLabel}</Badge>
+                <Badge tone={appointmentStatusTone(appointment.status)}>{appointment.statusLabel}</Badge>
               </Cell>
             </Row>
           ))}
@@ -82,13 +91,14 @@ export function WaitlistPage() {
       )}
 
       <Card className="mt-5 flex flex-wrap items-center gap-3 p-4">
-        <Button onClick={() => setPicking(selected)} disabled={!selected}>
+        <Button className="min-h-[44px]" onClick={() => setPicking(selected)} disabled={!selected}>
           Re-book selected patient
         </Button>
-        <span className="text-sm text-muted-foreground">
+        <p aria-live="polite" className="text-sm text-muted-foreground">
           {selected ? `Selected ${selected.patientName} (#${selected.id})` : 'Select a waitlisted appointment.'}
-        </span>
+        </p>
       </Card>
+
 
       <SlotPickerModal
         appointment={picking}

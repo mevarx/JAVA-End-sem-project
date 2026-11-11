@@ -1,26 +1,32 @@
 @import "tailwindcss";
 
-/* Design tokens from the ui-ux-pro-max healthcare recommendation:
-   calm cyan + health green, Atkinson Hyperlegible for accessibility. */
+/* Design tokens — calm cyan/teal healthcare palette.
+   Token names and hues are stable; values tuned so every
+   text-on-fill pair meets WCAG AA (4.5:1). No raw hex in components. */
 @theme {
-  --color-primary: #0891b2;
-  --color-primary-strong: #0e7490;
+  --color-primary: #0e7490;
+  --color-primary-strong: #155e75;
   --color-secondary: #22d3ee;
-  --color-accent: #059669;
-  --color-accent-strong: #047857;
+  --color-accent: #047857;
+  --color-accent-strong: #065f46;
   --color-background: #ecfeff;
   --color-surface: #ffffff;
   --color-foreground: #164e63;
   --color-muted: #e8f1f6;
   --color-muted-foreground: #475569;
-  --color-border: #a5f3fc;
+  --color-border: #a9cfdb;
+  --color-border-muted: #cfe4ec;
   --color-destructive: #dc2626;
-  --color-warning: #b45309;
-  --color-ring: #0891b2;
+  --color-warning: #92400e;
+  --color-ring: #0e7490;
 
   --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
 
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
   --radius-card: 0.875rem;
+
   --shadow-card: 0 1px 2px rgb(22 78 99 / 0.06), 0 8px 24px rgb(22 78 99 / 0.08);
 }
 

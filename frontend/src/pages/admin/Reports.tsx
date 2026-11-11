@@ -115,35 +115,41 @@ export function ReportsPage() {
         {notice && <Alert tone="success">{notice}</Alert>}
       </div>
 
-      <Card className="mb-5 flex flex-wrap gap-2 p-4">
-        <Button onClick={() => exportCsv(reportApi.appointmentsCsv(), 'appointments.csv')} disabled={busy}>
-          Export appointments CSV
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={() => exportCsv(reportApi.emergenciesCsv(), 'emergencies.csv')}
-          disabled={busy}
-        >
-          Export emergency CSV
-        </Button>
-        <input
-          ref={fileInput}
-          type="file"
-          accept=".csv,text/csv"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0]
-            if (file) importFile(file)
-          }}
-        />
-        <Button variant="secondary" onClick={() => fileInput.current?.click()} disabled={busy}>
-          Import availability CSV
-        </Button>
-        <Button variant="secondary" onClick={openAudit}>
-          Open audit log
-        </Button>
+      <Card className="mb-5 p-4">
+        <h2 className="text-base font-bold text-foreground">Exports and audit</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Download CSV snapshots, import availability, or review the append-only audit trail.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button onClick={() => exportCsv(reportApi.appointmentsCsv(), 'appointments.csv')} disabled={busy}>
+            Export appointments CSV
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => exportCsv(reportApi.emergenciesCsv(), 'emergencies.csv')}
+            disabled={busy}
+          >
+            Export emergency CSV
+          </Button>
+          <input
+            ref={fileInput}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) importFile(file)
+            }}
+          />
+          <Button variant="secondary" onClick={() => fileInput.current?.click()} disabled={busy}>
+            Import availability CSV
+          </Button>
+          <Button variant="secondary" onClick={openAudit}>
+            Open audit log
+          </Button>
+        </div>
         {importResult && !importResult.success && (
-          <p className="self-center text-xs text-amber-800">{importResult.error}</p>
+          <p className="mt-2 text-xs text-amber-800">{importResult.error}</p>
         )}
       </Card>
 

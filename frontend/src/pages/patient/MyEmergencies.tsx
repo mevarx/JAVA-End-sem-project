@@ -3,7 +3,7 @@ import { emergencyApi } from '../../api/endpoints'
 import type { EmergencyCase, EmergencyEvent } from '../../api/types'
 import { formatDateTime, emergencyStatusTone, severityTone, waitedFor } from '../../lib/format'
 import { useLiveRefresh } from '../../lib/useLiveRefresh'
-import { Badge, Button, Card, EmptyState, PageHeader, Spinner } from '../../components/ui'
+import { Alert, Badge, Button, Card, EmptyState, PageHeader, Spinner } from '../../components/ui'
 import { Cell, Row, Table } from '../../components/Table'
 
 export function MyEmergenciesPage() {
@@ -46,7 +46,7 @@ export function MyEmergenciesPage() {
   }, [selected])
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
         title="My emergencies"
         subtitle="Every emergency you raised, with its current status and timestamped timeline."
@@ -57,7 +57,7 @@ export function MyEmergenciesPage() {
         }
       />
 
-      {error && <p className="mb-3 text-sm text-red-700">{error}</p>}
+      <div className="space-y-2">{error && <Alert>{error}</Alert>}</div>
 
       {loading ? (
         <Spinner label="Loading emergencies…" />
@@ -67,42 +67,50 @@ export function MyEmergenciesPage() {
           hint="Use the Emergency button in the header if you need to raise a case."
         />
       ) : (
-        <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-          <Table head={['#', 'Severity', 'Type', 'Status', 'Raised', 'Waited']}>
-            {cases.map((emergency) => (
-              <Row
-                key={emergency.id}
-                selected={selected?.id === emergency.id}
-                onClick={() => setSelected(emergency)}
-              >
-                <Cell>#{emergency.id}</Cell>
-                <Cell>
-                  <Badge tone={severityTone(emergency.severity)}>{emergency.severityLabel}</Badge>
-                </Cell>
-                <Cell>{emergency.typeLabel}</Cell>
-                <Cell>
-                  <Badge tone={emergencyStatusTone(emergency.status)}>{emergency.statusLabel}</Badge>
-                </Cell>
-                <Cell>{formatDateTime(emergency.raisedAt)}</Cell>
-                <Cell>{waitedFor(emergency.raisedAt, emergency.resolvedAt)}</Cell>
-              </Row>
-            ))}
-          </Table>
+        <div className="grid items-start gap-5 lg:grid-cols-[1.4fr_1fr]">
+          <Card className="min-w-0 p-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="text-base font-semibold">Cases</h2>
+              <p className="text-sm text-muted-foreground">{cases.length} case(s)</p>
+            </div>
+            <div className="mt-3 overflow-x-auto">
+              <Table head={['#', 'Severity', 'Type', 'Status', 'Raised', 'Waited']}>
+                {cases.map((emergency) => (
+                  <Row
+                    key={emergency.id}
+                    selected={selected?.id === emergency.id}
+                    onClick={() => setSelected(emergency)}
+                  >
+                    <Cell>#{emergency.id}</Cell>
+                    <Cell>
+                      <Badge tone={severityTone(emergency.severity)}>{emergency.severityLabel}</Badge>
+                    </Cell>
+                    <Cell>{emergency.typeLabel}</Cell>
+                    <Cell>
+                      <Badge tone={emergencyStatusTone(emergency.status)}>{emergency.statusLabel}</Badge>
+                    </Cell>
+                    <Cell>{formatDateTime(emergency.raisedAt)}</Cell>
+                    <Cell>{waitedFor(emergency.raisedAt, emergency.resolvedAt)}</Cell>
+                  </Row>
+                ))}
+              </Table>
+            </div>
+          </Card>
 
-          <Card className="p-4">
-            <h2 className="text-base font-bold">Case timeline</h2>
-            <p className="mt-1 text-xs text-muted-foreground">
+          <Card className="min-w-0 p-4">
+            <h2 className="text-base font-semibold">Case timeline</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
               Every lifecycle event is timestamped in SQLite and the append-only audit file.
             </p>
             {selected ? (
               <ol className="mt-4 space-y-3">
                 {events.length === 0 && <li className="text-sm text-muted-foreground">No events yet.</li>}
                 {events.map((event) => (
-                  <li key={event.id} className="border-l-2 border-cyan-200 pl-3">
-                    <p className="text-xs font-bold uppercase tracking-wide text-primary">
+                  <li key={event.id} className="border-l-2 border-border pl-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-foreground">
                       {event.eventType}
                     </p>
-                    <p className="text-xs text-muted-foreground">{formatDateTime(event.eventTime)}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{formatDateTime(event.eventTime)}</p>
                     {event.note && <p className="mt-0.5 text-sm">{event.note}</p>}
                   </li>
                 ))}
