@@ -138,7 +138,7 @@ export function SlotPickerModal({
               className={cx(inputClass, 'min-w-0 flex-1')}
               value={date}
               min={today}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => setDate(e.target.value || today)}
             />
             <Button
               variant="ghost"

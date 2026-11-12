@@ -221,7 +221,7 @@ export function BookAppointmentPage() {
               className={inputClass}
               value={date}
               min={today}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => setDate(e.target.value || today)}
             />
           </Field>
           {!isPatient && (

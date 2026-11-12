@@ -257,7 +257,8 @@ export function AllAppointmentsPage() {
     [visible, selectedDay],
   )
 
-  const canAct = selected?.status === 'BOOKED' || selected?.status === 'PRE_EMPTED'
+  const canReschedule = selected?.status === 'BOOKED' || selected?.status === 'PRE_EMPTED'
+  const canCancel = selected?.status === 'BOOKED'
 
   const statusCounts = useMemo(() => {
     const counts = new Map<AppointmentStatus, number>()
@@ -603,16 +604,16 @@ export function AllAppointmentsPage() {
           <AppointmentDetailPanel
             appointment={selected}
             context="staff"
-            canReschedule={Boolean(canAct)}
-            canCancel={Boolean(canAct)}
+            canReschedule={Boolean(canReschedule)}
+            canCancel={Boolean(canCancel)}
             onReschedule={() => selected && setRescheduling(selected)}
             onCancel={() => selected && setCancelTarget(selected)}
             emptyTitle="Select an appointment to see its details"
           />
           <p className="mt-3 flex items-start gap-2 px-1 text-xs leading-relaxed text-muted">
             <CalendarDaysIcon aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            Booked and pre-empted appointments can be rescheduled or cancelled. Other statuses are
-            read-only.
+            Booked appointments can be rescheduled or cancelled; pre-empted appointments can be
+            rescheduled. Other statuses are read-only.
           </p>
         </aside>
       </div>

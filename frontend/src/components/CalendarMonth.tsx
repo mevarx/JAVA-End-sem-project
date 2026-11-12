@@ -50,6 +50,15 @@ export function CalendarMonth({
     },
   )
 
+  function changeMonth(delta: number) {
+    const next = shiftMonth(year, monthIndex, delta)
+    const [nextYear, nextMonth] = next.split('-').map(Number)
+    const maxDay = new Date(nextYear, nextMonth, 0).getDate()
+    const desiredDay = Math.min(Number(selectedDay.slice(8, 10)) || 1, maxDay)
+    onMonthChange(next)
+    onSelectDay(`${next}-${pad(desiredDay)}`)
+  }
+
   return (
     <div
       className={cx(
@@ -63,7 +72,7 @@ export function CalendarMonth({
         <IconButton
           label="Previous month"
           variant="secondary"
-          onClick={() => onMonthChange(shiftMonth(year, monthIndex, -1))}
+          onClick={() => changeMonth(-1)}
         >
           <ChevronLeftIcon className="h-4 w-4" aria-hidden="true" />
         </IconButton>
@@ -76,7 +85,7 @@ export function CalendarMonth({
         <IconButton
           label="Next month"
           variant="secondary"
-          onClick={() => onMonthChange(shiftMonth(year, monthIndex, 1))}
+          onClick={() => changeMonth(1)}
         >
           <ChevronRightIcon className="h-4 w-4" aria-hidden="true" />
         </IconButton>

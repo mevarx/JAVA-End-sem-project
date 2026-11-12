@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import {
@@ -177,9 +177,11 @@ export function DashboardPage() {
   const [errors, setErrors] = useState<Partial<Record<Section, string>>>({})
   const [ready, setReady] = useState(false)
   const [refreshedAt, setRefreshedAt] = useState<Date | null>(null)
+  const loadSequence = useRef(0)
 
   const load = useCallback(async () => {
     if (!role) return
+    const sequence = ++loadSequence.current
 
     const nextErrors: Partial<Record<Section, string>> = {}
 
@@ -189,10 +191,13 @@ export function DashboardPage() {
       apply: (value: T) => void,
     ): Promise<void> {
       try {
-        apply(await request)
+        const value = await request
+        if (sequence === loadSequence.current) apply(value)
       } catch (error) {
-        nextErrors[key] =
-          error instanceof Error ? error.message : 'Could not load this section.'
+        if (sequence === loadSequence.current) {
+          nextErrors[key] =
+            error instanceof Error ? error.message : 'Could not load this section.'
+        }
       }
     }
 
@@ -268,6 +273,7 @@ export function DashboardPage() {
     }
 
     await Promise.all(tasks)
+    if (sequence !== loadSequence.current) return
     setErrors(nextErrors)
     setRefreshedAt(new Date())
     setReady(true)

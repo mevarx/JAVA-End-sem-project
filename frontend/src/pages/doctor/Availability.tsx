@@ -129,7 +129,7 @@ export function AvailabilityPage() {
   const selectedSlot = slots.find((slot) => slot.id === selectedId) ?? null
 
   async function removeSlot() {
-    if (!selectedSlot || deleting) return
+    if (!selectedSlot || deleting || selectedSlot.status !== 'FREE') return
     setDeleting(true)
     setError(null)
     try {
@@ -320,25 +320,25 @@ export function AvailabilityPage() {
             ariaLabel="My published slots"
             empty={<p className="px-4 py-12 text-center text-sm text-muted">No slots yet.</p>}
             mobileCard={(slot) => (
-              <div className="min-w-0">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-ink">
+              <span className="block min-w-0">
+                <span className="flex items-start justify-between gap-3">
+                  <span className="block min-w-0">
+                    <span className="block truncate font-semibold text-ink">
                       {formatWeekday(slot.start, true)} · {formatDate(slot.start)}
-                    </p>
-                    <p className="mt-1 font-mono text-sm tabular-nums text-ink-soft">
+                    </span>
+                    <span className="mt-1 block font-mono text-sm tabular-nums text-ink-soft">
                       {formatTime(slot.start)} – {formatTime(slot.end)}
-                    </p>
-                    <p className="mt-1 text-xs text-muted">{slot.departmentName}</p>
-                  </div>
+                    </span>
+                    <span className="mt-1 block text-xs text-muted">{slot.departmentName}</span>
+                  </span>
                   <SlotStatusBadge status={slot.status} />
-                </div>
+                </span>
                 {selectedId === slot.id && (
-                  <p className="mt-2 text-xs font-medium text-accent-ink">
-                    Selected for deletion
-                  </p>
+                  <span className="mt-2 block text-xs font-medium text-accent-ink">
+                    {slot.status === 'FREE' ? 'Selected for deletion' : 'Booked slot selected'}
+                  </span>
                 )}
-              </div>
+              </span>
             )}
           />
         )}
@@ -358,11 +358,14 @@ export function AvailabilityPage() {
               ) : (
                 <p className="text-sm text-muted">Select a slot above to delete it.</p>
               )}
+              {selectedSlot && selectedSlot.status !== 'FREE' && (
+                <p className="w-full text-sm text-muted">Only free slots can be deleted.</p>
+              )}
             </div>
             <Button
               variant="danger"
               className="w-full sm:w-auto"
-              disabled={!selectedSlot}
+              disabled={!selectedSlot || selectedSlot.status !== 'FREE'}
               onClick={() => setConfirmOpen(true)}
             >
               <TrashIcon className="h-4 w-4" aria-hidden="true" />
