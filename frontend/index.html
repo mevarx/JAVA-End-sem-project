@@ -1,17 +1,31 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
-    <meta name="theme-color" content="#0e7490" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="HAES — hospital appointments and emergency operations in one calm workspace."
+    />
+    <meta name="theme-color" content="#f4f3ed" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#080e0c" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/logo.svg" />
-    <title>HAES · Hospital Appointment & Emergency Scheduler</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
+    <title>HAES · Hospital Appointment &amp; Emergency Scheduler</title>
+    <script>
+      // Resolve the theme before first paint to avoid a light flash in dark mode.
+      (function () {
+        try {
+          var stored = localStorage.getItem('haes-theme')
+          var dark =
+            stored === 'dark' ||
+            (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        } catch (error) {
+          document.documentElement.dataset.theme = 'light'
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

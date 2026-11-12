@@ -2,20 +2,57 @@ import { useEffect, useState } from 'react'
 import { emergencyApi, userApi } from '../api/endpoints'
 import type { EmergencyType, Severity, User } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
-import { Alert, Button, Field, Modal, inputClass } from './ui'
+import {
+  ActivityIcon,
+  AlertTriangleIcon,
+  CircleDotIcon,
+  HeartPulseIcon,
+  SirenIcon,
+  type IconComponent,
+} from './icons'
+import { Alert, Button, Field, Modal, cx, inputClass, selectClass } from './ui'
+import { useToast } from './feedback'
 
-const TYPES: { value: EmergencyType; label: string }[] = [
-  { value: 'CARDIAC', label: 'Cardiac' },
-  { value: 'TRAUMA', label: 'Trauma' },
-  { value: 'RESPIRATORY', label: 'Respiratory' },
-  { value: 'STROKE', label: 'Stroke' },
-  { value: 'OTHER', label: 'Other' },
+const TYPE_OPTIONS: { value: EmergencyType; label: string; icon: IconComponent }[] = [
+  { value: 'CARDIAC', label: 'Cardiac', icon: HeartPulseIcon },
+  { value: 'TRAUMA', label: 'Trauma', icon: AlertTriangleIcon },
+  { value: 'RESPIRATORY', label: 'Respiratory', icon: ActivityIcon },
+  { value: 'STROKE', label: 'Stroke', icon: SirenIcon },
+  { value: 'OTHER', label: 'Other', icon: CircleDotIcon },
 ]
 
-const SEVERITIES: { value: Severity; label: string }[] = [
-  { value: 'CRITICAL', label: 'Critical' },
-  { value: 'HIGH', label: 'High' },
-  { value: 'MEDIUM', label: 'Medium' },
+const SEVERITY_OPTIONS: {
+  value: Severity
+  label: string
+  hint: string
+  icon: IconComponent
+  dot: string
+  selected: string
+}[] = [
+  {
+    value: 'CRITICAL',
+    label: 'Critical',
+    hint: 'Life-threatening. Pre-empts routine care.',
+    icon: SirenIcon,
+    dot: 'bg-critical',
+    selected: 'border-critical/60 bg-critical-soft',
+  },
+  {
+    value: 'HIGH',
+    label: 'High',
+    hint: 'Urgent. Needs rapid triage.',
+    icon: AlertTriangleIcon,
+    dot: 'bg-warning',
+    selected: 'border-warning/50 bg-warning-soft',
+  },
+  {
+    value: 'MEDIUM',
+    label: 'Medium',
+    hint: 'Stable. Standard queue order.',
+    icon: ActivityIcon,
+    dot: 'bg-accent',
+    selected: 'border-accent/50 bg-accent-soft',
+  },
 ]
 
 export function EmergencyDialog({
@@ -28,6 +65,7 @@ export function EmergencyDialog({
   onRaised: () => void
 }) {
   const { user } = useAuth()
+  const toast = useToast()
   const [type, setType] = useState<EmergencyType>('CARDIAC')
   const [severity, setSeverity] = useState<Severity>('HIGH')
   const [location, setLocation] = useState('ER Gate')
@@ -62,12 +100,17 @@ export function EmergencyDialog({
     setBusy(true)
     setError(null)
     try {
-      await emergencyApi.raise({
+      const raised = await emergencyApi.raise({
         type,
         severity,
         location,
         patientId: isPatient ? undefined : patientId ? Number(patientId) : null,
         patientLabel: isPatient ? undefined : patientId ? null : walkIn,
+      })
+      toast.push({
+        title: 'Emergency raised',
+        description: `#${raised.id} · ${raised.typeLabel} · ${raised.severityLabel}`,
+        tone: 'success',
       })
       onRaised()
       onClose()
@@ -82,71 +125,147 @@ export function EmergencyDialog({
     <Modal
       open={open}
       title="Raise emergency"
+      description="The case enters the priority queue immediately."
       onClose={onClose}
+      maxWidth="max-w-2xl"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose} disabled={busy}>
+          <Button variant="secondary" className="min-h-11" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
-          <Button variant="emergency" onClick={submit} disabled={busy}>
-            {busy ? 'Raising…' : 'Raise emergency'}
+          <Button
+            variant="emergency"
+            className="min-h-11"
+            onClick={submit}
+            disabled={busy}
+            loading={busy}
+          >
+            Raise emergency
           </Button>
         </>
       }
     >
-      <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          The case enters the priority queue immediately. A Critical case may pre-empt a routine
-          appointment.
-        </p>
-        {error && <Alert>{error}</Alert>}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Type">
-            <select className={inputClass} value={type} onChange={(e) => setType(e.target.value as EmergencyType)}>
-              {TYPES.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Severity">
-            <select
-              className={inputClass}
-              value={severity}
-              onChange={(e) => setSeverity(e.target.value as Severity)}
-            >
-              {SEVERITIES.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
-        <Field label="Location">
-          <input className={inputClass} value={location} onChange={(e) => setLocation(e.target.value)} />
+      <div className="space-y-5">
+        <Alert tone="warning" title="Critical cases pre-empt routine care">
+          A Critical case may pre-empt a routine appointment. Severity and arrival time decide queue
+          order.
+        </Alert>
+
+        {error && (
+          <Alert tone="error" onDismiss={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+
+        <fieldset className="min-w-0">
+          <legend className="text-[13px] font-semibold leading-none text-ink">Type</legend>
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {TYPE_OPTIONS.map((option) => {
+              const Icon = option.icon
+              const active = type === option.value
+              return (
+                <label
+                  key={option.value}
+                  className={cx(
+                    'relative flex min-h-[4.5rem] cursor-pointer select-none flex-col justify-between gap-2 rounded-lg border p-3 transition-colors duration-150 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring',
+                    active
+                      ? 'border-accent bg-accent-soft text-accent-ink'
+                      : 'border-line bg-surface text-ink hover:border-line-strong hover:bg-subtle/40',
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="emergency-type"
+                    value={option.value}
+                    checked={active}
+                    onChange={() => setType(option.value)}
+                    className="sr-only"
+                  />
+                  <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                  <span className="text-[13px] font-semibold leading-none">{option.label}</span>
+                </label>
+              )
+            })}
+          </div>
+        </fieldset>
+
+        <fieldset className="min-w-0">
+          <legend className="text-[13px] font-semibold leading-none text-ink">Severity</legend>
+          <div className="mt-2 grid gap-2 sm:grid-cols-3">
+            {SEVERITY_OPTIONS.map((option) => {
+              const Icon = option.icon
+              const active = severity === option.value
+              return (
+                <label
+                  key={option.value}
+                  className={cx(
+                    'relative flex cursor-pointer select-none flex-col gap-1.5 rounded-lg border p-3 transition-colors duration-150 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring',
+                    active ? option.selected : 'border-line bg-surface hover:border-line-strong',
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="emergency-severity"
+                    value={option.value}
+                    checked={active}
+                    onChange={() => setSeverity(option.value)}
+                    className="sr-only"
+                  />
+                  <span className="flex items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className={cx('h-2 w-2 shrink-0 rounded-full', option.dot)}
+                    />
+                    <span className="text-[13px] font-semibold leading-none text-ink">
+                      {option.label}
+                    </span>
+                    <Icon className="ml-auto h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+                  </span>
+                  <span className="block text-xs leading-relaxed text-muted">{option.hint}</span>
+                </label>
+              )
+            })}
+          </div>
+        </fieldset>
+
+        <Field label="Location" hint="Where the patient is right now.">
+          <input
+            className={inputClass}
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
         </Field>
+
         {!isPatient && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Existing patient" hint="Leave empty for a walk-in.">
-              <select className={inputClass} value={patientId} onChange={(e) => setPatientId(e.target.value)}>
-                <option value="">Walk-in / unregistered</option>
-                {patients.map((patient) => (
-                  <option key={patient.id} value={patient.id}>
-                    {patient.fullName}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Walk-in label">
-              <input
-                className={inputClass}
-                value={walkIn}
-                disabled={patientId !== ''}
-                onChange={(e) => setWalkIn(e.target.value)}
-              />
-            </Field>
+          <div className="rounded-lg border border-line bg-subtle/40 p-3.5">
+            <p className="text-[13px] font-semibold leading-none text-ink">Patient</p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Field label="Existing patient" hint="Leave empty for a walk-in.">
+                <select
+                  className={selectClass}
+                  value={patientId}
+                  onChange={(e) => setPatientId(e.target.value)}
+                >
+                  <option value="">Walk-in / unregistered</option>
+                  {patients.map((patient) => (
+                    <option key={patient.id} value={patient.id}>
+                      {patient.fullName}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field
+                label="Walk-in label"
+                hint={patientId ? 'Not used while an existing patient is selected.' : undefined}
+              >
+                <input
+                  className={inputClass}
+                  value={walkIn}
+                  disabled={patientId !== ''}
+                  onChange={(e) => setWalkIn(e.target.value)}
+                />
+              </Field>
+            </div>
           </div>
         )}
       </div>

@@ -1,23 +1,60 @@
-import type { ReactNode } from 'react'
+import { lazy, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import type { Role } from './api/types'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { AppLayout } from './components/Layout'
+import { ToastProvider } from './components/feedback'
 import { Spinner } from './components/ui'
 import { ROLE_HOME } from './nav'
 import { LoginPage } from './pages/auth/Login'
 import { RegisterPage } from './pages/auth/Register'
-import { AdminDepartmentsPage } from './pages/admin/Departments'
-import { AdminUsersPage } from './pages/admin/Users'
-import { ReportsPage } from './pages/admin/Reports'
-import { AvailabilityPage } from './pages/doctor/Availability'
-import { SchedulePage } from './pages/doctor/Schedule'
-import { EmergencyBoardPage } from './pages/emergency/EmergencyBoard'
-import { MyAppointmentsPage } from './pages/patient/MyAppointments'
-import { MyEmergenciesPage } from './pages/patient/MyEmergencies'
-import { BookAppointmentPage } from './pages/patient/BookAppointment'
-import { AllAppointmentsPage } from './pages/staff/AllAppointments'
-import { WaitlistPage } from './pages/staff/Waitlist'
+
+const DashboardPage = lazy(() =>
+  import('./pages/Dashboard').then((module) => ({ default: module.DashboardPage })),
+)
+const AdminDepartmentsPage = lazy(() =>
+  import('./pages/admin/Departments').then((module) => ({ default: module.AdminDepartmentsPage })),
+)
+const AdminUsersPage = lazy(() =>
+  import('./pages/admin/Users').then((module) => ({ default: module.AdminUsersPage })),
+)
+const ReportsPage = lazy(() =>
+  import('./pages/admin/Reports').then((module) => ({ default: module.ReportsPage })),
+)
+const AvailabilityPage = lazy(() =>
+  import('./pages/doctor/Availability').then((module) => ({ default: module.AvailabilityPage })),
+)
+const SchedulePage = lazy(() =>
+  import('./pages/doctor/Schedule').then((module) => ({ default: module.SchedulePage })),
+)
+const EmergencyBoardPage = lazy(() =>
+  import('./pages/emergency/EmergencyBoard').then((module) => ({
+    default: module.EmergencyBoardPage,
+  })),
+)
+const MyAppointmentsPage = lazy(() =>
+  import('./pages/patient/MyAppointments').then((module) => ({
+    default: module.MyAppointmentsPage,
+  })),
+)
+const MyEmergenciesPage = lazy(() =>
+  import('./pages/patient/MyEmergencies').then((module) => ({
+    default: module.MyEmergenciesPage,
+  })),
+)
+const BookAppointmentPage = lazy(() =>
+  import('./pages/patient/BookAppointment').then((module) => ({
+    default: module.BookAppointmentPage,
+  })),
+)
+const AllAppointmentsPage = lazy(() =>
+  import('./pages/staff/AllAppointments').then((module) => ({
+    default: module.AllAppointmentsPage,
+  })),
+)
+const WaitlistPage = lazy(() =>
+  import('./pages/staff/Waitlist').then((module) => ({ default: module.WaitlistPage })),
+)
 
 function RequireAuth() {
   const { user, loading } = useAuth()
@@ -49,7 +86,8 @@ function HomeRedirect() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter>
         <Routes>
           <Route
             path="/login"
@@ -70,6 +108,7 @@ export default function App() {
 
           <Route element={<RequireAuth />}>
             <Route element={<AppLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
               <Route
                 path="/book"
                 element={
@@ -162,7 +201,8 @@ export default function App() {
             </Route>
           </Route>
         </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   )
 }

@@ -81,11 +81,21 @@ appointment views on every event, mirroring `MainWindow.receive()` in the deskto
 
 | Role | Screens |
 | --- | --- |
-| Patient | Book appointment, My appointments, My emergencies |
-| Doctor | My schedule, Availability, My emergencies (assigned) |
-| Receptionist | Book for patient, All appointments, Re-booking queue, Emergency board |
-| ER staff | Emergency board, All appointments |
-| Admin | Users, Departments, Appointments, Re-booking queue, Emergency board, Reports |
+| Patient | Dashboard, Book appointment, My appointments, My emergencies |
+| Doctor | Dashboard, My schedule, Availability, My emergencies (assigned) |
+| Receptionist | Dashboard, Book for patient, All appointments, Re-booking queue, Emergency board |
+| ER staff | Dashboard, Emergency board, All appointments |
+| Admin | Dashboard, Users, Departments, Appointments, Re-booking queue, Emergency board, Reports |
+
+## Web UI system
+
+The SPA uses a semantic token layer (`frontend/src/styles/tokens.css`) for the warm
+paper canvas, deep green-black ink and emerald signal colour, with a full dark theme.
+Components never reference raw palette classes. Shared primitives live in
+`frontend/src/components/` (`ui`, `DataList`, `status`, `feedback`, `charts`,
+`CalendarMonth`, `AppointmentDetailPanel`), and the shell in `components/shell/`.
+Motion variants are centralised in `frontend/src/lib/motion.ts`; route-level lazy
+loading keeps the initial bundle small. All motion respects `prefers-reduced-motion`.
 
 ## Tests
 

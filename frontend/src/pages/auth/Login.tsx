@@ -1,9 +1,17 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { useAuth } from '../../auth/AuthContext'
 import { ROLE_HOME } from '../../nav'
-import { Alert, Button, Card, Field, inputClass } from '../../components/ui'
-import { Logo } from '../../components/Logo'
+import {
+  AuthErrorAlert,
+  AuthField,
+  AuthPasswordField,
+  AuthShell,
+} from '../../components/AuthShell'
+import { Button } from '../../components/ui'
+import { ArrowRightIcon, UserIcon } from '../../components/icons'
+import { pageVariants } from '../../lib/motion'
 
 const DEMO_ACCOUNTS = [
   { role: 'Patient', username: 'patient.anita', password: 'patient123' },
@@ -35,85 +43,105 @@ export function LoginPage() {
     }
   }
 
+  function fillDemo(account: (typeof DEMO_ACCOUNTS)[number]) {
+    setUsername(account.username)
+    setPassword(account.password)
+    setError(null)
+  }
+
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-muted px-4 py-10">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center text-center">
-          <Logo size={40} />
-          <p className="mt-3 text-lg font-bold tracking-tight text-foreground">HAES</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Hospital Appointment &amp; Emergency Scheduler
+    <AuthShell mode="login">
+      <motion.div variants={pageVariants} initial="initial" animate="animate">
+        <header>
+          <p className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-accent-ink">
+            Staff &amp; patient access
           </p>
-        </div>
-
-        <Card className="mt-6 p-6 sm:p-8">
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Sign in</h1>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Use your hospital account to continue.
+          <h1 className="mt-2.5 font-display text-[1.9rem] font-semibold leading-tight tracking-[-0.03em] text-ink sm:text-[2.15rem]">
+            Welcome back
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            Sign in with your hospital account to reach your workspace.
           </p>
+        </header>
 
-          <form className="mt-6 space-y-4" onSubmit={submit}>
-            {error && (
-              <Alert>
-                <span role="alert">{error}</span>
-              </Alert>
-            )}
-            <Field label="Username">
-              <input
-                className={`${inputClass} min-h-[44px]`}
-                autoComplete="username"
-                name="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Password">
-              <input
-                className={`${inputClass} min-h-[44px]`}
-                type="password"
-                autoComplete="current-password"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </Field>
-            <Button type="submit" className="min-h-[44px] w-full" disabled={busy}>
-              {busy ? 'Signing in…' : 'Sign in'}
-            </Button>
-          </form>
-        </Card>
+        <form className="mt-7 space-y-4" onSubmit={submit}>
+          <AuthErrorAlert message={error} />
 
-        <p className="mt-4 border-t border-border pt-4 text-center text-sm text-muted-foreground">
+          <AuthField
+            id="login-username"
+            label="Username"
+            icon={<UserIcon />}
+            value={username}
+            onChange={setUsername}
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+          />
+
+          <AuthPasswordField
+            id="login-password"
+            label="Password"
+            value={password}
+            onChange={setPassword}
+            autoComplete="current-password"
+            required
+          />
+
+          <Button type="submit" className="w-full" loading={busy} disabled={busy}>
+            {busy ? 'Signing in…' : 'Sign in'}
+          </Button>
+        </form>
+
+        <p className="mt-5 text-center text-sm text-muted">
           New here?{' '}
-          <Link className="font-bold text-primary hover:underline" to="/register">
+          <Link
+            to="/register"
+            className="font-semibold text-accent-ink underline-offset-4 hover:underline"
+          >
             Create a patient account
           </Link>
         </p>
 
-        <div className="mt-4 rounded-2xl border border-border bg-surface p-4 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            Demo accounts
-          </p>
-          <div className="mt-2 grid gap-1">
+        <section className="mt-7 border-t border-line pt-5" aria-labelledby="demo-accounts-title">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <h2
+              id="demo-accounts-title"
+              className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted"
+            >
+              Demo accounts
+            </h2>
+            <p className="text-[11px] leading-relaxed text-muted">
+              Select a role to fill both fields.
+            </p>
+          </div>
+
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
             {DEMO_ACCOUNTS.map((account) => (
               <button
                 key={account.username}
                 type="button"
-                onClick={() => {
-                  setUsername(account.username)
-                  setPassword(account.password)
-                }}
-                className="flex min-h-[44px] cursor-pointer items-center justify-between gap-2 rounded-lg px-2 text-left transition-colors duration-150 hover:bg-muted"
+                onClick={() => fillDemo(account)}
+                aria-label={`Fill ${account.role} demo credentials, username ${account.username}`}
+                className="group flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-left transition-colors duration-150 hover:border-line-strong hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-safe:active:translate-y-px"
               >
-                <span className="text-sm font-bold text-foreground">{account.role}</span>
-                <span className="font-mono text-xs text-muted-foreground">{account.username}</span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[13px] font-semibold leading-tight text-ink">
+                    {account.role}
+                  </span>
+                  <span className="mt-0.5 block truncate font-mono text-[10px] leading-tight text-muted">
+                    {account.username}
+                  </span>
+                </span>
+                <ArrowRightIcon
+                  className="shrink-0 text-muted opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
+                  aria-hidden="true"
+                />
               </button>
             ))}
           </div>
-        </div>
-      </div>
-    </div>
+        </section>
+      </motion.div>
+    </AuthShell>
   )
 }

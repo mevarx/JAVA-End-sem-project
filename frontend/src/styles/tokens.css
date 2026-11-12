@@ -1,54 +1,245 @@
 @import "tailwindcss";
 
-/* Design tokens — calm cyan/teal healthcare palette.
-   Token names and hues are stable; values tuned so every
-   text-on-fill pair meets WCAG AA (4.5:1). No raw hex in components. */
-@theme {
-  --color-primary: #0e7490;
-  --color-primary-strong: #155e75;
-  --color-secondary: #22d3ee;
-  --color-accent: #047857;
-  --color-accent-strong: #065f46;
-  --color-background: #ecfeff;
-  --color-surface: #ffffff;
-  --color-foreground: #164e63;
-  --color-muted: #e8f1f6;
-  --color-muted-foreground: #475569;
-  --color-border: #a9cfdb;
-  --color-border-muted: #cfe4ec;
-  --color-destructive: #dc2626;
-  --color-warning: #92400e;
-  --color-ring: #0e7490;
+/*
+  HAES design tokens — "quiet operations".
+  Warm paper surfaces, deep green-black ink, one emerald signal colour.
+  Every component uses semantic tokens only; no raw palette classes.
+  Both themes must keep all text/fill pairs at WCAG AA or better.
+*/
 
-  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+@theme inline {
+  --color-canvas: var(--haes-canvas);
+  --color-surface: var(--haes-surface);
+  --color-subtle: var(--haes-subtle);
+  --color-ink: var(--haes-ink);
+  --color-ink-soft: var(--haes-ink-soft);
+  --color-muted: var(--haes-muted);
+  --color-line: var(--haes-line);
+  --color-line-strong: var(--haes-line-strong);
+  --color-accent: var(--haes-accent);
+  --color-accent-strong: var(--haes-accent-strong);
+  --color-accent-soft: var(--haes-accent-soft);
+  --color-accent-ink: var(--haes-accent-ink);
+  --color-on-accent: var(--haes-on-accent);
+  --color-critical: var(--haes-critical);
+  --color-critical-soft: var(--haes-critical-soft);
+  --color-critical-ink: var(--haes-critical-ink);
+  --color-warning: var(--haes-warning);
+  --color-warning-soft: var(--haes-warning-soft);
+  --color-warning-ink: var(--haes-warning-ink);
+  --color-success: var(--haes-success);
+  --color-success-soft: var(--haes-success-soft);
+  --color-success-ink: var(--haes-success-ink);
+  --color-info: var(--haes-info);
+  --color-info-soft: var(--haes-info-soft);
+  --color-info-ink: var(--haes-info-ink);
+  --color-ring: var(--haes-ring);
+  --color-overlay: var(--haes-overlay);
+  --color-panel: var(--haes-panel);
+  --color-panel-ink: var(--haes-panel-ink);
+  --color-panel-muted: var(--haes-panel-muted);
+  --color-panel-line: var(--haes-panel-line);
+  --color-panel-accent: var(--haes-panel-accent);
 
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-card: 0.875rem;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Inter Tight Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", "SFMono-Regular", monospace;
 
-  --shadow-card: 0 1px 2px rgb(22 78 99 / 0.06), 0 8px 24px rgb(22 78 99 / 0.08);
+  --radius-xs: 0.375rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-card: 1rem;
+
+  --shadow-xs: 0 1px 1px rgb(12 31 26 / 0.04), 0 1px 2px rgb(12 31 26 / 0.04);
+  --shadow-sm: 0 1px 2px rgb(12 31 26 / 0.05), 0 3px 8px -2px rgb(12 31 26 / 0.06);
+  --shadow-md: 0 2px 4px rgb(12 31 26 / 0.04), 0 12px 28px -12px rgb(12 31 26 / 0.14);
+  --shadow-lg: 0 4px 8px rgb(12 31 26 / 0.05), 0 28px 60px -24px rgb(12 31 26 / 0.24);
+  --shadow-float: 0 24px 70px -28px rgb(4 24 18 / 0.42);
+}
+
+:root {
+  color-scheme: light;
+
+  --haes-canvas: #f4f3ed;
+  --haes-surface: #fdfdf9;
+  --haes-subtle: #ecebe3;
+  --haes-ink: #0c1f1a;
+  --haes-ink-soft: #33463e;
+  --haes-muted: #5f6e67;
+  --haes-line: #dcdcd1;
+  --haes-line-strong: #c5c7ba;
+  --haes-accent: #0a6b4f;
+  --haes-accent-strong: #064c38;
+  --haes-accent-soft: #e2f0e8;
+  --haes-accent-ink: #07543e;
+  --haes-on-accent: #fbfefb;
+  --haes-critical: #b42318;
+  --haes-critical-soft: #fbe9e6;
+  --haes-critical-ink: #7f1a12;
+  --haes-warning: #9a5b00;
+  --haes-warning-soft: #fbf0d9;
+  --haes-warning-ink: #6f4100;
+  --haes-success: #0a6b4f;
+  --haes-success-soft: #e2f0e8;
+  --haes-success-ink: #07543e;
+  --haes-info: #215d69;
+  --haes-info-soft: #e6f1f2;
+  --haes-info-ink: #16434d;
+  --haes-ring: #0a6b4f;
+  --haes-overlay: rgb(9 22 18 / 0.52);
+  --haes-panel: #07120e;
+  --haes-panel-ink: #f2f7f3;
+  --haes-panel-muted: #a6b8ae;
+  --haes-panel-line: #25372e;
+  --haes-panel-accent: #7fe3b8;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --haes-canvas: #080e0c;
+  --haes-surface: #0f1714;
+  --haes-subtle: #17211c;
+  --haes-ink: #eaf2ed;
+  --haes-ink-soft: #b8c7bf;
+  --haes-muted: #8da198;
+  --haes-line: #24322b;
+  --haes-line-strong: #35483e;
+  --haes-accent: #5fd3a6;
+  --haes-accent-strong: #8ce8c4;
+  --haes-accent-soft: #103127;
+  --haes-accent-ink: #a9f2d3;
+  --haes-on-accent: #041b13;
+  --haes-critical: #ff857a;
+  --haes-critical-soft: #3a1714;
+  --haes-critical-ink: #ffb7af;
+  --haes-warning: #f0c268;
+  --haes-warning-soft: #37290f;
+  --haes-warning-ink: #f7d99f;
+  --haes-success: #5fd3a6;
+  --haes-success-soft: #103127;
+  --haes-success-ink: #a9f2d3;
+  --haes-info: #7cc7d4;
+  --haes-info-soft: #102d33;
+  --haes-info-ink: #b3e7ef;
+  --haes-ring: #5fd3a6;
+  --haes-overlay: rgb(2 8 6 / 0.68);
+  --haes-panel: #0b1712;
+  --haes-panel-ink: #f2f7f3;
+  --haes-panel-muted: #a6b8ae;
+  --haes-panel-line: #25372e;
+  --haes-panel-accent: #8ce8c4;
 }
 
 @layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-line);
+  }
+
   html {
     font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    background-color: var(--color-canvas);
   }
+
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    min-height: 100dvh;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
   :focus-visible {
-    outline: 3px solid var(--color-ring);
+    outline: 2px solid var(--color-ring);
     outline-offset: 2px;
   }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0.55;
+    cursor: pointer;
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
     *,
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .hairline {
+    border-color: color-mix(in oklab, var(--color-line) 82%, transparent);
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .bg-grid-fine {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--color-line) 55%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--color-line) 55%, transparent) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .bg-grid-dark {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .mask-fade-b {
+    mask-image: linear-gradient(to bottom, black 62%, transparent 100%);
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }

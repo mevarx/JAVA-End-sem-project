@@ -1,16 +1,32 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { useAuth } from '../../auth/AuthContext'
 import { ROLE_HOME } from '../../nav'
-import { Alert, Button, Card, Field, inputClass } from '../../components/ui'
-import { Logo } from '../../components/Logo'
+import {
+  AuthErrorAlert,
+  AuthField,
+  AuthPasswordField,
+  AuthShell,
+} from '../../components/AuthShell'
+import { Button } from '../../components/ui'
+import { PhoneIcon, UserIcon } from '../../components/icons'
+import { pageVariants } from '../../lib/motion'
 
 export function RegisterPage() {
   const { register } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ username: '', password: '', fullName: '', phone: '' })
+  const [form, setForm] = useState({
+    username: '',
+    password: '',
+    confirm: '',
+    fullName: '',
+    phone: '',
+  })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+
+  const mismatch = form.confirm.length > 0 && form.confirm !== form.password
 
   function update(field: keyof typeof form, value: string) {
     setForm((previous) => ({ ...previous, [field]: value }))
@@ -18,6 +34,10 @@ export function RegisterPage() {
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
+    if (form.password !== form.confirm) {
+      setError(null)
+      return
+    }
     setBusy(true)
     setError(null)
     try {
@@ -31,84 +51,92 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-muted px-4 py-10">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center text-center">
-          <Logo size={40} />
-          <p className="mt-3 text-lg font-bold tracking-tight text-foreground">HAES</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Hospital Appointment &amp; Emergency Scheduler
+    <AuthShell mode="register">
+      <motion.div variants={pageVariants} initial="initial" animate="animate">
+        <header>
+          <p className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-accent-ink">
+            New patient registration
           </p>
-        </div>
-
-        <Card className="mt-6 p-6 sm:p-8">
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
+          <h1 className="mt-2.5 font-display text-[1.9rem] font-semibold leading-tight tracking-[-0.03em] text-ink sm:text-[2.15rem]">
             Create a patient account
           </h1>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            You will be signed in automatically after registering.
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            Set up access to book appointments. You will be signed in automatically after
+            registering.
           </p>
+        </header>
 
-          <form className="mt-6 space-y-4" onSubmit={submit}>
-            {error && (
-              <Alert>
-                <span role="alert">{error}</span>
-              </Alert>
-            )}
-            <Field label="Username">
-              <input
-                className={`${inputClass} min-h-[44px]`}
-                autoComplete="username"
-                name="username"
-                value={form.username}
-                onChange={(e) => update('username', e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Password" hint="At least 6 characters.">
-              <input
-                className={`${inputClass} min-h-[44px]`}
-                type="password"
-                autoComplete="new-password"
-                name="password"
-                value={form.password}
-                onChange={(e) => update('password', e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Full name">
-              <input
-                className={`${inputClass} min-h-[44px]`}
-                autoComplete="name"
-                name="fullName"
-                value={form.fullName}
-                onChange={(e) => update('fullName', e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Phone (optional)">
-              <input
-                className={`${inputClass} min-h-[44px]`}
-                type="tel"
-                autoComplete="tel"
-                name="phone"
-                value={form.phone}
-                onChange={(e) => update('phone', e.target.value)}
-              />
-            </Field>
-            <Button type="submit" className="min-h-[44px] w-full" disabled={busy}>
-              {busy ? 'Creating account…' : 'Create account'}
-            </Button>
-          </form>
-        </Card>
+        <form className="mt-7 space-y-4" onSubmit={submit}>
+          <AuthErrorAlert message={error} />
 
-        <p className="mt-4 border-t border-border pt-4 text-center text-sm text-muted-foreground">
+          <AuthField
+            id="register-username"
+            label="Username"
+            icon={<UserIcon />}
+            value={form.username}
+            onChange={(value) => update('username', value)}
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+          />
+
+          <AuthPasswordField
+            id="register-password"
+            label="Password"
+            value={form.password}
+            onChange={(value) => update('password', value)}
+            autoComplete="new-password"
+            hint="At least 6 characters."
+            required
+          />
+
+          <AuthPasswordField
+            id="register-confirm"
+            label="Confirm password"
+            value={form.confirm}
+            onChange={(value) => update('confirm', value)}
+            autoComplete="new-password"
+            error={mismatch ? 'Passwords do not match.' : undefined}
+            required
+          />
+
+          <AuthField
+            id="register-full-name"
+            label="Full name"
+            icon={<UserIcon />}
+            value={form.fullName}
+            onChange={(value) => update('fullName', value)}
+            autoComplete="name"
+            required
+          />
+
+          <AuthField
+            id="register-phone"
+            label="Phone (optional)"
+            icon={<PhoneIcon />}
+            value={form.phone}
+            onChange={(value) => update('phone', value)}
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+          />
+
+          <Button type="submit" className="w-full" loading={busy} disabled={busy}>
+            {busy ? 'Creating account…' : 'Create account'}
+          </Button>
+        </form>
+
+        <p className="mt-5 text-center text-sm text-muted">
           Already registered?{' '}
-          <Link className="font-bold text-primary hover:underline" to="/login">
+          <Link
+            to="/login"
+            className="font-semibold text-accent-ink underline-offset-4 hover:underline"
+          >
             Sign in
           </Link>
         </p>
-      </div>
-    </div>
+      </motion.div>
+    </AuthShell>
   )
 }
