@@ -23,15 +23,7 @@ public class Doctor extends User {
         return specialization;
     }
 
-    public void setSpecialization(String specialization) {
-        this.specialization = specialization;
-    }
-
     public boolean isOnCall() {
         return onCall;
-    }
-
-    public void setOnCall(boolean onCall) {
-        this.onCall = onCall;
     }
 }

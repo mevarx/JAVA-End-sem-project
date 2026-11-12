@@ -23,8 +23,6 @@ export const authApi = {
   register: (username: string, password: string, fullName: string, phone: string) =>
     http.post<{ user: User }>('/auth/register', { username, password, fullName, phone }),
   logout: () => http.post<void>('/auth/logout'),
-  changePassword: (currentPassword: string, newPassword: string) =>
-    http.post<void>('/auth/change-password', { currentPassword, newPassword }),
 }
 
 export const userApi = {
@@ -87,7 +85,6 @@ export const appointmentApi = {
   changeStatus: (id: number, status: AppointmentStatus) =>
     http.post<void>(`/appointments/${id}/status`, { status }),
   waitlist: () => http.get<Appointment[]>('/appointments/waitlist'),
-  limits: () => http.get<{ maxActiveAppointments: number }>('/appointments/limits'),
 }
 
 export const emergencyApi = {
@@ -101,7 +98,6 @@ export const emergencyApi = {
   board: (scope: 'active' | 'all' = 'active') =>
     http.get<Board>(`/emergencies/board?scope=${scope}`),
   mine: () => http.get<EmergencyCase[]>('/emergencies/mine'),
-  get: (id: number) => http.get<EmergencyCase>(`/emergencies/${id}`),
   events: (id: number) => http.get<EmergencyEvent[]>(`/emergencies/${id}/events`),
   acknowledge: (id: number) => http.post<EmergencyCase>(`/emergencies/${id}/acknowledge`),
   resolve: (id: number, note: string) =>

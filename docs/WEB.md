@@ -57,7 +57,7 @@ All paths are under `/api`. Unless noted, a valid session is required.
 
 Errors use `{ "status": 400, "error": "Bad Request", "message": "…" }` with these
 statuses: 400 validation, 401 anonymous/bad login, 403 not allowed, 409 booking
-conflict, 503 no resource, 500 database/unexpected.
+conflict, 500 database/unexpected.
 
 ## Live updates
 

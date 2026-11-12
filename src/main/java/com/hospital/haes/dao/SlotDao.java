@@ -122,28 +122,6 @@ public class SlotDao implements Repository<Slot, Integer> {
         }
     }
 
-    public List<Slot> findAvailableForDoctorBetween(int doctorId, LocalDateTime from, LocalDateTime to)
-            throws DatabaseOperationException {
-        String sql = SELECT_JOINED
-                + " WHERE s.status = 'FREE' AND s.doctor_id = ? AND s.start_time >= ? AND s.start_time < ?"
-                + " ORDER BY s.start_time";
-        List<Slot> slots = new ArrayList<>();
-        try (Connection connection = databaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, doctorId);
-            statement.setString(2, from.toString());
-            statement.setString(3, to.toString());
-            try (ResultSet rs = statement.executeQuery()) {
-                while (rs.next()) {
-                    slots.add(map(rs));
-                }
-            }
-            return slots;
-        } catch (SQLException e) {
-            throw new DatabaseOperationException("Could not load doctor availability.", e);
-        }
-    }
-
     public List<Slot> findByDoctor(int doctorId) throws DatabaseOperationException {
         String sql = SELECT_JOINED + " WHERE s.doctor_id = ? ORDER BY s.start_time DESC";
         List<Slot> slots = new ArrayList<>();
@@ -228,10 +206,6 @@ public class SlotDao implements Repository<Slot, Integer> {
             statement.setInt(2, slotId);
             return statement.executeUpdate() == 1;
         }
-    }
-
-    public void updateStatus(int slotId, SlotStatus status) throws DatabaseOperationException {
-        databaseManager.inTransaction(connection -> updateStatus(connection, slotId, status));
     }
 
     @Override

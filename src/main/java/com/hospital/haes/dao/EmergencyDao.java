@@ -76,16 +76,6 @@ public class EmergencyDao implements Repository<EmergencyCase, Integer> {
         }
     }
 
-    public Optional<EmergencyCase> findById(Connection connection, int id) throws SQLException {
-        String sql = SELECT_JOINED + " WHERE e.id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, id);
-            try (ResultSet rs = statement.executeQuery()) {
-                return rs.next() ? Optional.of(map(rs)) : Optional.empty();
-            }
-        }
-    }
-
     @Override
     public List<EmergencyCase> findAll() throws DatabaseOperationException {
         String sql = SELECT_JOINED + " ORDER BY e.raised_at DESC";

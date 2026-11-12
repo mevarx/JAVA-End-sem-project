@@ -29,11 +29,8 @@ import java.nio.file.Path;
 public final class AppContext {
 
     private final DatabaseManager databaseManager;
-    private final UserDao userDao;
     private final DepartmentDao departmentDao;
     private final SlotDao slotDao;
-    private final AppointmentDao appointmentDao;
-    private final EmergencyDao emergencyDao;
     private final AuthService authService;
     private final UserService userService;
     private final DepartmentService departmentService;
@@ -44,18 +41,14 @@ public final class AppContext {
     private final FileLogger auditLog;
 
     private AppContext(DatabaseManager databaseManager,
-                       UserDao userDao, DepartmentDao departmentDao, SlotDao slotDao,
-                       AppointmentDao appointmentDao, EmergencyDao emergencyDao,
+                       DepartmentDao departmentDao, SlotDao slotDao,
                        AuthService authService, UserService userService,
                        DepartmentService departmentService, AppointmentService appointmentService,
                        EmergencyService emergencyService, NotificationService notificationService,
                        ReportingService reportingService, FileLogger auditLog) {
         this.databaseManager = databaseManager;
-        this.userDao = userDao;
         this.departmentDao = departmentDao;
         this.slotDao = slotDao;
-        this.appointmentDao = appointmentDao;
-        this.emergencyDao = emergencyDao;
         this.authService = authService;
         this.userService = userService;
         this.departmentService = departmentService;
@@ -91,17 +84,13 @@ public final class AppContext {
         ReportingService reportingService = new ReportingService(appointmentDao, emergencyDao,
                 userDao, appointmentService, new CsvExporter(), new CsvImporter());
 
-        return new AppContext(databaseManager, userDao, departmentDao, slotDao, appointmentDao,
-                emergencyDao, authService, userService, departmentService, appointmentService,
-                emergencyService, notificationService, reportingService, auditLog);
+        return new AppContext(databaseManager, departmentDao, slotDao, authService, userService,
+                departmentService, appointmentService, emergencyService, notificationService,
+                reportingService, auditLog);
     }
 
     public DatabaseManager databaseManager() {
         return databaseManager;
-    }
-
-    public UserDao userDao() {
-        return userDao;
     }
 
     public DepartmentDao departmentDao() {
@@ -110,14 +99,6 @@ public final class AppContext {
 
     public SlotDao slotDao() {
         return slotDao;
-    }
-
-    public AppointmentDao appointmentDao() {
-        return appointmentDao;
-    }
-
-    public EmergencyDao emergencyDao() {
-        return emergencyDao;
     }
 
     public AuthService authService() {

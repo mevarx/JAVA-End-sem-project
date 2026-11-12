@@ -2,9 +2,6 @@ package com.hospital.haes.scheduler;
 
 import com.hospital.haes.model.Schedulable;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -15,17 +12,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class PriorityScheduler<T extends Schedulable & Comparable<T>> {
 
-    private final PriorityBlockingQueue<T> queue;
-    private final Comparator<? super T> comparator;
+    private final PriorityBlockingQueue<T> queue = new PriorityBlockingQueue<>();
 
     public PriorityScheduler() {
-        this.queue = new PriorityBlockingQueue<>();
-        this.comparator = null;
-    }
-
-    public PriorityScheduler(Comparator<T> comparator) {
-        this.queue = new PriorityBlockingQueue<>(11, comparator);
-        this.comparator = comparator;
     }
 
     public void offer(T item) {
@@ -40,32 +29,12 @@ public class PriorityScheduler<T extends Schedulable & Comparable<T>> {
         return queue.poll();
     }
 
-    public T peek() {
-        return queue.peek();
-    }
-
     public int size() {
         return queue.size();
     }
 
-    public boolean isEmpty() {
-        return queue.isEmpty();
-    }
-
-    public boolean remove(T item) {
-        return queue.remove(item);
-    }
-
     public void clear() {
         queue.clear();
-    }
-
-    /** Stable snapshot in priority order; used by tests and the UI. */
-    public List<T> snapshot() {
-        List<T> copy = new ArrayList<>(queue);
-        // Honour the comparator the queue was built with; fall back to natural order.
-        copy.sort(comparator != null ? comparator : Comparator.naturalOrder());
-        return copy;
     }
 
     public PriorityBlockingQueue<T> asQueue() {

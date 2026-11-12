@@ -17,11 +17,4 @@ public final class CurrentUser {
         }
         throw new IllegalStateException("No authenticated session on this request");
     }
-
-    public static boolean isStaff(WebSession session) {
-        return switch (session.role()) {
-            case RECEPTIONIST, ER_STAFF, ADMIN -> true;
-            default -> false;
-        };
-    }
 }

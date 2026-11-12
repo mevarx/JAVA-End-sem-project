@@ -1,9 +1,7 @@
 package com.hospital.haes.web.error;
 
 import com.hospital.haes.exception.DatabaseOperationException;
-import com.hospital.haes.exception.EmergencyEscalationException;
 import com.hospital.haes.exception.InvalidBookingException;
-import com.hospital.haes.exception.NoResourceAvailableException;
 import com.hospital.haes.exception.SlotConflictException;
 import com.hospital.haes.exception.UnauthorizedActionException;
 import com.hospital.haes.exception.ValidationException;
@@ -51,17 +49,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedActionException.class)
     public ResponseEntity<ApiError> forbidden(UnauthorizedActionException e) {
         return build(HttpStatus.FORBIDDEN, e.getMessage());
-    }
-
-    @ExceptionHandler(NoResourceAvailableException.class)
-    public ResponseEntity<ApiError> unavailable(NoResourceAvailableException e) {
-        return build(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
-    }
-
-    @ExceptionHandler(EmergencyEscalationException.class)
-    public ResponseEntity<ApiError> escalation(EmergencyEscalationException e) {
-        log.error("Emergency escalation failed", e);
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
     }
 
     @ExceptionHandler(DatabaseOperationException.class)

@@ -20,7 +20,7 @@ export interface NavItem {
   labelsByRole?: Partial<Record<Role, string>>
 }
 
-export const NAV_ITEMS: NavItem[] = [
+const NAV_ITEMS: NavItem[] = [
   {
     to: '/dashboard',
     label: 'Dashboard',
@@ -139,7 +139,7 @@ export const ROLE_WORKSPACE: Record<Role, string> = {
   ADMIN: 'Administration',
 }
 
-export function navForRole(role: Role): NavItem[] {
+function navForRole(role: Role): NavItem[] {
   return NAV_ITEMS.filter((item) => item.roles.includes(role))
 }
 

@@ -18,10 +18,6 @@ public enum AppointmentStatus {
         return label;
     }
 
-    public boolean isActive() {
-        return this == BOOKED;
-    }
-
     @Override
     public String toString() {
         return label;

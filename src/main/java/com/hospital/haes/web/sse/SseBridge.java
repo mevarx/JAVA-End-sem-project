@@ -7,8 +7,6 @@ import com.hospital.haes.web.dto.NotificationDto;
 import com.hospital.haes.web.mapper.ApiMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,8 +27,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 @Component
 public class SseBridge implements Notifiable {
-
-    private static final Logger log = LoggerFactory.getLogger(SseBridge.class);
 
     private final NotificationService notificationService;
     private final ApiMapper mapper;
@@ -117,10 +113,5 @@ public class SseBridge implements Notifiable {
 
     private void removeByEmitter(SseEmitter emitter) {
         byUser.forEach((userId, emitters) -> remove(userId, emitter));
-    }
-
-    /** Visible for tests. */
-    public int connectionCount() {
-        return byUser.values().stream().mapToInt(List::size).sum();
     }
 }

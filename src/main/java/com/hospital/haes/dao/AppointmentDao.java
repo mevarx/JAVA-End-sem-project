@@ -92,12 +92,6 @@ public class AppointmentDao implements Repository<Appointment, Integer> {
         return queryList(sql, patientId);
     }
 
-    public List<Appointment> findActiveByPatient(int patientId) throws DatabaseOperationException {
-        String sql = SELECT_JOINED
-                + " WHERE a.patient_id = ? AND a.status = 'BOOKED' ORDER BY s.start_time";
-        return queryList(sql, patientId);
-    }
-
     public List<Appointment> findActiveByPatient(Connection connection, int patientId) throws SQLException {
         String sql = SELECT_JOINED
                 + " WHERE a.patient_id = ? AND a.status = 'BOOKED' ORDER BY s.start_time";
@@ -230,10 +224,6 @@ public class AppointmentDao implements Repository<Appointment, Integer> {
             statement.setInt(2, appointmentId);
             return statement.executeUpdate() == 1;
         }
-    }
-
-    public void updateStatus(int appointmentId, AppointmentStatus status) throws DatabaseOperationException {
-        databaseManager.inTransaction(connection -> updateStatus(connection, appointmentId, status));
     }
 
     @Override

@@ -5,7 +5,6 @@ type Theme = 'light' | 'dark'
 interface ThemeState {
   theme: Theme
   toggleTheme: () => void
-  setTheme: (theme: Theme) => void
 }
 
 const STORAGE_KEY = 'haes-theme'
@@ -30,13 +29,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [theme])
 
-  const setTheme = useCallback((next: Theme) => setThemeState(next), [])
   const toggleTheme = useCallback(
     () => setThemeState((current) => (current === 'dark' ? 'light' : 'dark')),
     [],
   )
 
-  const value = useMemo(() => ({ theme, toggleTheme, setTheme }), [theme, toggleTheme, setTheme])
+  const value = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme])
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
 

@@ -3,13 +3,10 @@ package com.hospital.haes.ui.views;
 import com.hospital.haes.exception.DatabaseOperationException;
 import com.hospital.haes.model.EmergencyCase;
 import com.hospital.haes.model.EmergencyEvent;
-import com.hospital.haes.model.User;
 import com.hospital.haes.ui.AppContext;
-import com.hospital.haes.ui.MainWindow;
 import com.hospital.haes.ui.UiUtils;
 import com.hospital.haes.util.Result;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -21,7 +18,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
@@ -36,7 +32,6 @@ import java.util.OptionalDouble;
 public class ReportsView extends BorderPane implements Refreshable {
 
     private final AppContext context;
-    private final User actor;
     private final Label appointmentValue = new Label("—");
     private final Label emergencyValue = new Label("—");
     private final Label activeValue = new Label("—");
@@ -44,9 +39,8 @@ public class ReportsView extends BorderPane implements Refreshable {
     private final Label statusLabel = new Label("Ready");
     private final ListView<EmergencyEvent> recentEvents = new ListView<>();
 
-    public ReportsView(AppContext context, User actor) {
+    public ReportsView(AppContext context) {
         this.context = context;
-        this.actor = actor;
         setPadding(new Insets(16));
         setTop(buildHeader());
         setCenter(buildContent());

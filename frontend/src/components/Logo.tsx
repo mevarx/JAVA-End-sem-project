@@ -53,17 +53,15 @@ export function Logo({
   )
 }
 
-export function Wordmark({ compact = false }: { compact?: boolean }) {
+export function Wordmark() {
   return (
     <span className="flex min-w-0 flex-col leading-none">
       <span className="font-display text-[1.35rem] font-semibold tracking-[-0.04em] text-ink">
         HAES
       </span>
-      {!compact && (
-        <span className="mt-1 truncate text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted">
-          Health operations
-        </span>
-      )}
+      <span className="mt-1 truncate text-[0.58rem] font-medium uppercase tracking-[0.18em] text-muted">
+        Health operations
+      </span>
     </span>
   )
 }

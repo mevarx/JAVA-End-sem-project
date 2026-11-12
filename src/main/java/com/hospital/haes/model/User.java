@@ -41,10 +41,6 @@ public abstract class User {
         return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -57,24 +53,12 @@ public abstract class User {
         return fullName;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
     public String getPhone() {
         return phone;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
     public Integer getDepartmentId() {
         return departmentId;
-    }
-
-    public void setDepartmentId(Integer departmentId) {
-        this.departmentId = departmentId;
     }
 
     public boolean isActive() {
@@ -88,14 +72,6 @@ public abstract class User {
     /** Doctors override this with their specialization; others return null. */
     public String getSpecialization() {
         return null;
-    }
-
-    public boolean isDoctor() {
-        return getRole() == Role.DOCTOR;
-    }
-
-    public String getDisplayLabel() {
-        return fullName + " (" + getRole().getLabel() + ")";
     }
 
     @Override

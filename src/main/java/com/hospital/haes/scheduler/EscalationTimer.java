@@ -27,10 +27,6 @@ public class EscalationTimer implements AutoCloseable {
         future = executor.scheduleAtFixedRate(safe(scanTask), periodSeconds, periodSeconds, TimeUnit.SECONDS);
     }
 
-    public synchronized boolean isRunning() {
-        return future != null && !future.isDone();
-    }
-
     public synchronized void stop() {
         if (future != null) {
             future.cancel(false);

@@ -1,11 +1,9 @@
 package com.hospital.haes.ui;
 
-import com.hospital.haes.model.Appointment;
 import com.hospital.haes.model.EmergencyCase;
 import com.hospital.haes.model.Notification;
 import com.hospital.haes.model.NotificationLevel;
 import com.hospital.haes.model.Notifiable;
-import com.hospital.haes.model.Role;
 import com.hospital.haes.model.User;
 import com.hospital.haes.ui.views.AdminDepartmentsView;
 import com.hospital.haes.ui.views.AdminUsersView;
@@ -28,7 +26,6 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -229,7 +226,7 @@ public class MainWindow extends BorderPane implements Notifiable {
                 addTab("Re-book queue", new WaitlistView(context, user));
                 addTab("Emergency board", new EmergencyBoardView(context, user,
                         EmergencyBoardView.Scope.ALL));
-                addTab("Reports", new ReportsView(context, user));
+                addTab("Reports", new ReportsView(context));
             }
         }
         if (tabPane.getTabs().isEmpty()) {

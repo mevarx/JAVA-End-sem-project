@@ -73,8 +73,4 @@ public class NotificationService {
     public List<Notification> getHistory() {
         return new ArrayList<>(history);
     }
-
-    public void clearHistory() {
-        history.clear();
-    }
 }

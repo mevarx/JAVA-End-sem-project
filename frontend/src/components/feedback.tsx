@@ -23,7 +23,7 @@ import { Button, Modal, Skeleton, SkeletonText, cx } from './ui'
 
 export { TableSkeleton } from './ui'
 
-export type ToastTone = 'success' | 'error' | 'info' | 'warning'
+type ToastTone = 'success' | 'error' | 'info' | 'warning'
 
 export interface ToastInput {
   title: string
@@ -41,7 +41,6 @@ interface ToastRecord {
 
 export interface ToastApi {
   push: (input: ToastInput) => void
-  dismiss: (id: number) => void
 }
 
 const ToastContext = createContext<ToastApi | null>(null)
@@ -150,7 +149,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const api = useMemo<ToastApi>(() => ({ push, dismiss }), [push, dismiss])
+  const api = useMemo<ToastApi>(() => ({ push }), [push])
 
   return (
     <ToastContext.Provider value={api}>
@@ -237,7 +236,7 @@ export function ConfirmDialog({
   )
 }
 
-export function PageSkeleton({ stats = true }: { stats?: boolean }) {
+export function PageSkeleton() {
   return (
     <div role="status" aria-label="Loading page" className="space-y-6">
       <span className="sr-only">Loading…</span>
@@ -248,20 +247,18 @@ export function PageSkeleton({ stats = true }: { stats?: boolean }) {
         <SkeletonText lines={2} className="max-w-md" />
       </div>
 
-      {stats && (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }, (_, index) => (
-            <div
-              key={index}
-              className="rounded-card border border-line bg-surface p-5 shadow-xs"
-            >
-              <Skeleton className="h-2.5 w-20 rounded-sm" />
-              <Skeleton className="mt-4 h-8 w-16 rounded-md" />
-              <Skeleton className="mt-3 h-2.5 w-28 rounded-sm" />
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div
+            key={index}
+            className="rounded-card border border-line bg-surface p-5 shadow-xs"
+          >
+            <Skeleton className="h-2.5 w-20 rounded-sm" />
+            <Skeleton className="mt-4 h-8 w-16 rounded-md" />
+            <Skeleton className="mt-3 h-2.5 w-28 rounded-sm" />
+          </div>
+        ))}
+      </div>
 
       <div className="overflow-hidden rounded-card border border-line bg-surface shadow-xs">
         {Array.from({ length: 5 }, (_, index) => (

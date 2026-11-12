@@ -61,14 +61,6 @@ public class SessionRegistry {
         }
     }
 
-    public void clear() {
-        sessions.clear();
-    }
-
-    public int size() {
-        return sessions.size();
-    }
-
     private void pruneExpired() {
         Instant now = Instant.now();
         sessions.values().removeIf(session -> isExpired(session, now));

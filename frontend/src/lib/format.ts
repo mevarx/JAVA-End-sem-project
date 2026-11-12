@@ -100,13 +100,6 @@ export function dayKey(iso: string | null | undefined): string {
   ).padStart(2, '0')}`
 }
 
-export function isSameDay(a: string | null | undefined, b: string | null | undefined): boolean {
-  const left = parse(a)
-  const right = parse(b)
-  if (!left || !right) return false
-  return dayKey(a) === dayKey(b)
-}
-
 export function isToday(iso: string | null | undefined): boolean {
   return dayKey(iso) === todayIso()
 }
@@ -114,11 +107,6 @@ export function isToday(iso: string | null | undefined): boolean {
 export function isFuture(iso: string | null | undefined): boolean {
   const date = parse(iso)
   return date ? date.getTime() > Date.now() : false
-}
-
-export function isPast(iso: string | null | undefined): boolean {
-  const date = parse(iso)
-  return date ? date.getTime() < Date.now() : false
 }
 
 export function formatWait(raisedAt: string, resolvedAt: string | null): string {

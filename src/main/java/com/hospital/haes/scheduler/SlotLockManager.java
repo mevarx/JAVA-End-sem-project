@@ -23,24 +23,6 @@ public class SlotLockManager {
         }
     }
 
-    public void withLock(int slotId, Runnable action) {
-        lock(slotId);
-        try {
-            action.run();
-        } finally {
-            unlock(slotId);
-        }
-    }
-
-    public boolean isLocked(int slotId) {
-        ReentrantLock lock = locks.get(slotId);
-        return lock != null && lock.isLocked();
-    }
-
-    public int trackedSlotCount() {
-        return locks.size();
-    }
-
     private ReentrantLock lockFor(int slotId) {
         return locks.computeIfAbsent(slotId, id -> new ReentrantLock(true));
     }

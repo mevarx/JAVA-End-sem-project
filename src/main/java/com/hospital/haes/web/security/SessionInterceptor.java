@@ -1,7 +1,6 @@
 package com.hospital.haes.web.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hospital.haes.model.Role;
 import com.hospital.haes.web.dto.ApiError;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -95,10 +94,5 @@ public class SessionInterceptor implements HandlerInterceptor {
         response.setCharacterEncoding("UTF-8");
         objectMapper.writeValue(response.getWriter(),
                 new ApiError(status.value(), status.getReasonPhrase(), message, LocalDateTime.now()));
-    }
-
-    /** Used by controllers that want to re-check a role beyond the annotation. */
-    public static boolean hasAnyRole(WebSession session, Role... roles) {
-        return Arrays.asList(roles).contains(session.role());
     }
 }

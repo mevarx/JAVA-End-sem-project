@@ -39,10 +39,6 @@ public class Appointment extends Booking implements Comparable<Appointment> {
         return slot;
     }
 
-    public void setSlot(Slot slot) {
-        this.slot = slot;
-    }
-
     public int getSlotId() {
         return slot == null ? 0 : slot.getId();
     }
@@ -55,16 +51,8 @@ public class Appointment extends Booking implements Comparable<Appointment> {
         return patientId;
     }
 
-    public void setPatientId(int patientId) {
-        this.patientId = patientId;
-    }
-
     public String getReason() {
         return reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
     }
 
     public AppointmentStatus getStatus() {
@@ -78,10 +66,6 @@ public class Appointment extends Booking implements Comparable<Appointment> {
     @Override
     public LocalDateTime getCreatedAt() {
         return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 
     @Override

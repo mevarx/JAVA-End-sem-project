@@ -69,16 +69,6 @@ public class UserDao implements Repository<User, Integer> {
         }
     }
 
-    public Optional<User> findById(Connection connection, int id) throws SQLException {
-        String sql = SELECT_ALL + " WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, id);
-            try (ResultSet rs = statement.executeQuery()) {
-                return rs.next() ? Optional.of(map(rs)) : Optional.empty();
-            }
-        }
-    }
-
     public Optional<User> findByUsername(String username) throws DatabaseOperationException {
         String sql = SELECT_ALL + " WHERE username = ? COLLATE NOCASE";
         try (Connection connection = databaseManager.getConnection();
@@ -178,19 +168,6 @@ public class UserDao implements Repository<User, Integer> {
                                 + "reference it. Deactivate the account instead, or remove those records first.", e);
             }
             throw new DatabaseOperationException("Could not delete the user: " + message, e);
-        }
-    }
-
-    public int countByRole(Role role) throws DatabaseOperationException {
-        String sql = "SELECT COUNT(*) FROM users WHERE role = ? AND active = 1";
-        try (Connection connection = databaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, role.name());
-            try (ResultSet rs = statement.executeQuery()) {
-                return rs.next() ? rs.getInt(1) : 0;
-            }
-        } catch (SQLException e) {
-            throw new DatabaseOperationException("Could not count users.", e);
         }
     }
 

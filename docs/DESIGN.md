@@ -59,7 +59,6 @@ com.hospital.haes
 ├─ exception
 │  ├─ SlotConflictException, InvalidBookingException
 │  ├─ UnauthorizedActionException, ValidationException
-│  ├─ NoResourceAvailableException, EmergencyEscalationException
 │  └─ DatabaseOperationException
 ├─ util
 │  ├─ Validator, PasswordHasher, CsvImporter, CsvExporter
@@ -86,7 +85,6 @@ classDiagram
         -Integer departmentId
         -boolean active
         +getRole() Role
-        +getDisplayLabel() String
     }
     class Patient
     class Doctor {

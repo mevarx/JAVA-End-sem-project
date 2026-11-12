@@ -2,8 +2,7 @@ import type { Transition, Variants } from 'motion/react'
 
 /** Shared easing curves. Keep motion consistent across every surface. */
 export const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1]
-export const EASE_IN: [number, number, number, number] = [0.4, 0, 1, 1]
-export const EASE_SOFT: [number, number, number, number] = [0.22, 0.61, 0.36, 1]
+const EASE_IN: [number, number, number, number] = [0.4, 0, 1, 1]
 
 export const springSoft: Transition = { type: 'spring', stiffness: 420, damping: 34, mass: 0.85 }
 export const springSnappy: Transition = { type: 'spring', stiffness: 620, damping: 38, mass: 0.7 }
@@ -33,11 +32,6 @@ export const fadeUpSmall: Variants = {
 export const staggerContainer: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.055, delayChildren: 0.03 } },
-}
-
-export const staggerFast: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.035 } },
 }
 
 export const listItem: Variants = {
@@ -74,10 +68,4 @@ export const toastVariants: Variants = {
   hidden: { opacity: 0, y: 14, scale: 0.97 },
   show: { opacity: 1, y: 0, scale: 1, transition: springSnappy },
   exit: { opacity: 0, x: 24, transition: { duration: 0.18, ease: EASE_IN } },
-}
-
-export const expandVariants: Variants = {
-  hidden: { height: 0, opacity: 0 },
-  show: { height: 'auto', opacity: 1, transition: { duration: 0.28, ease: EASE_OUT } },
-  exit: { height: 0, opacity: 0, transition: { duration: 0.2, ease: EASE_IN } },
 }

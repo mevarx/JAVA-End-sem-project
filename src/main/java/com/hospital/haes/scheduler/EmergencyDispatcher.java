@@ -110,14 +110,6 @@ public class EmergencyDispatcher implements AutoCloseable {
         }
     }
 
-    public boolean isRunning() {
-        return running.get();
-    }
-
-    public int queueSize() {
-        return queue.size();
-    }
-
     @Override
     public void close() {
         stop();

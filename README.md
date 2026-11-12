@@ -321,7 +321,6 @@ classDiagram
         -Integer departmentId
         -boolean active
         +getRole() Role
-        +getDisplayLabel() String
     }
     class Patient
     class Doctor {
@@ -651,7 +650,6 @@ Errors use `{ "status": 400, "error": "Bad Request", "message": "…" }`:
 | 401 | Anonymous request or bad login |
 | 403 | Authenticated but not allowed |
 | 409 | Booking conflict or invalid appointment state |
-| 503 | No resource available |
 | 500 | Database or unexpected failure |
 
 ### 9.3 Live updates

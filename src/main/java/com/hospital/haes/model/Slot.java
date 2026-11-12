@@ -9,7 +9,6 @@ import java.time.format.DateTimeFormatter;
 public class Slot implements Schedulable {
 
     public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
-    public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
     private int id;
     private int doctorId;
@@ -29,10 +28,6 @@ public class Slot implements Schedulable {
         this.status = status;
     }
 
-    public Slot(int doctorId, LocalDateTime startTime, LocalDateTime endTime) {
-        this(0, doctorId, startTime, endTime, SlotStatus.FREE);
-    }
-
     public int getId() {
         return id;
     }
@@ -45,10 +40,6 @@ public class Slot implements Schedulable {
         return doctorId;
     }
 
-    public void setDoctorId(int doctorId) {
-        this.doctorId = doctorId;
-    }
-
     @Override
     public LocalDateTime getStart() {
         return startTime;
@@ -58,10 +49,6 @@ public class Slot implements Schedulable {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
-
     @Override
     public LocalDateTime getEnd() {
         return endTime;
@@ -69,10 +56,6 @@ public class Slot implements Schedulable {
 
     public LocalDateTime getEndTime() {
         return endTime;
-    }
-
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
     }
 
     public SlotStatus getStatus() {

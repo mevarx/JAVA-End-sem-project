@@ -51,10 +51,6 @@ public class EmergencyEvent {
         return note;
     }
 
-    public String getFormattedTime() {
-        return eventTime.format(DISPLAY_TIME);
-    }
-
     @Override
     public String toString() {
         return eventTime.format(DISPLAY_TIME) + "  " + eventType

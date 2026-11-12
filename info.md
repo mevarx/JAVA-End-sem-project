@@ -84,7 +84,6 @@ com.hospital.haes
 │               SlotDao, AppointmentDao, EmergencyDao, SampleData
 ├─ exception    SlotConflictException, InvalidBookingException,
 │               UnauthorizedActionException, ValidationException,
-│               NoResourceAvailableException, EmergencyEscalationException,
 │               DatabaseOperationException
 ├─ util         Validator, PasswordHasher, CsvImporter, CsvExporter,
 │               FileLogger, Result<T>

@@ -500,17 +500,6 @@ public class EmergencyService {
         return queue.size();
     }
 
-    public int getAckTimeoutSeconds() {
-        return ackTimeoutSeconds;
-    }
-
-    public void setAckTimeoutSeconds(int ackTimeoutSeconds) {
-        if (ackTimeoutSeconds < 0) {
-            throw new IllegalArgumentException("Acknowledgment timeout cannot be negative");
-        }
-        this.ackTimeoutSeconds = ackTimeoutSeconds;
-    }
-
     public BedPool getBedPool() {
         return bedPool;
     }

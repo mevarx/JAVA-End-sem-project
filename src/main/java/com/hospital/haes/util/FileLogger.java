@@ -1,6 +1,5 @@
 package com.hospital.haes.util;
 
-import com.hospital.haes.model.Auditable;
 import com.hospital.haes.model.EmergencyCase;
 
 import java.io.IOException;
@@ -47,15 +46,6 @@ public class FileLogger {
         String line = LocalDateTime.now().format(LOG_TIME)
                 + " | " + eventType
                 + " | " + emergencyCase.toLogLine()
-                + (note == null || note.isBlank() ? "" : " | " + note)
-                + System.lineSeparator();
-        appendRaw(line);
-    }
-
-    public synchronized void log(String eventType, Auditable item, String note) {
-        String line = LocalDateTime.now().format(LOG_TIME)
-                + " | " + eventType
-                + " | " + item.toLogLine()
                 + (note == null || note.isBlank() ? "" : " | " + note)
                 + System.lineSeparator();
         appendRaw(line);

@@ -71,10 +71,6 @@ public class EmergencyCase extends Booking implements Comparable<EmergencyCase> 
         return patientId;
     }
 
-    public void setPatientId(Integer patientId) {
-        this.patientId = patientId;
-    }
-
     public String getPatientLabel() {
         if (patientLabel != null && !patientLabel.isBlank()) {
             return patientLabel;
@@ -82,32 +78,16 @@ public class EmergencyCase extends Booking implements Comparable<EmergencyCase> 
         return patientId == null ? "Unknown" : "Patient #" + patientId;
     }
 
-    public void setPatientLabel(String patientLabel) {
-        this.patientLabel = patientLabel;
-    }
-
     public EmergencyType getType() {
         return type;
-    }
-
-    public void setType(EmergencyType type) {
-        this.type = type;
     }
 
     public Severity getSeverity() {
         return severity;
     }
 
-    public void setSeverity(Severity severity) {
-        this.severity = severity;
-    }
-
     public String getLocation() {
         return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
     }
 
     public EmergencyStatus getStatus() {
@@ -149,10 +129,6 @@ public class EmergencyCase extends Booking implements Comparable<EmergencyCase> 
 
     public LocalDateTime getRaisedAt() {
         return raisedAt;
-    }
-
-    public void setRaisedAt(LocalDateTime raisedAt) {
-        this.raisedAt = raisedAt;
     }
 
     public LocalDateTime getDispatchedAt() {

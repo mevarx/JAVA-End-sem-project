@@ -28,8 +28,8 @@ export function cx(...parts: Array<string | false | null | undefined>): string {
 const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'emergency'
-export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'emergency'
+type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
@@ -133,18 +133,14 @@ export function IconButton({
 export function Card({
   className,
   children,
-  interactive = false,
 }: {
   className?: string
   children: ReactNode
-  interactive?: boolean
 }) {
   return (
     <div
       className={cx(
         'rounded-card border border-line bg-surface shadow-xs',
-        interactive &&
-          'transition-[border-color,box-shadow,transform] duration-200 hover:border-line-strong hover:shadow-sm motion-safe:hover:-translate-y-0.5',
         className,
       )}
     >
@@ -658,20 +654,12 @@ export function Modal({
 /* Feedback primitives                                                        */
 /* -------------------------------------------------------------------------- */
 
-const SPINNER_SIZES = {
-  sm: 'h-4 w-4',
-  md: 'h-6 w-6',
-  lg: 'h-8 w-8',
-} as const
-
 export function Spinner({
   label = 'Loading…',
   className,
-  size = 'md',
 }: {
   label?: string
   className?: string
-  size?: 'sm' | 'md' | 'lg'
 }) {
   return (
     <div
@@ -685,8 +673,7 @@ export function Spinner({
       <span
         aria-hidden="true"
         className={cx(
-          'animate-spin rounded-full border-2 border-line border-t-accent motion-reduce:animate-none',
-          SPINNER_SIZES[size],
+          'animate-spin rounded-full border-2 border-line border-t-accent motion-reduce:animate-none h-6 w-6',
         )}
       />
       {label && <span>{label}</span>}
@@ -902,14 +889,12 @@ export function SegmentedControl<T extends string>({
   onChange,
   ariaLabel,
   className,
-  size = 'md',
 }: {
   options: { value: T; label: string; count?: number }[]
   value: T
   onChange: (value: T) => void
   ariaLabel?: string
   className?: string
-  size?: 'sm' | 'md'
 }) {
   const rawId = useId()
   const indicatorId = `segmented-${rawId.replace(/:/g, '')}`
@@ -954,7 +939,7 @@ export function SegmentedControl<T extends string>({
             }}
             className={cx(
               'relative inline-flex grow shrink-0 basis-auto cursor-pointer items-center justify-center gap-1.5 rounded-md px-3 font-medium transition-colors duration-150 sm:flex-none',
-              size === 'sm' ? 'min-h-9 text-[13px]' : 'min-h-11 text-sm',
+              'min-h-11 text-sm',
               active ? 'text-ink' : 'text-muted hover:text-ink',
               focusRing,
             )}
